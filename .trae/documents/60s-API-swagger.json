@@ -1,0 +1,1167 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "60s API",
+    "description": "60s API 是一系列高质量、开源、可靠、全球 CDN 加速的开放 API 集合。包括日更资讯、热搜榜单、实用功能、娱乐消遣等多种类型的API服务。",
+    "version": "2.0.0",
+    "contact": {
+      "name": "vikiboss",
+      "url": "https://github.com/vikiboss/60s"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/vikiboss/60s/blob/main/LICENSE"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://60s.viki.moe",
+      "description": "主域名 (Deno Deploy)"
+    },
+    {
+      "url": "https://60s.b23.run",
+      "description": "备用域名 1 (Deno Deploy)"
+    },
+    {
+      "url": "https://60s-api-cf.viki.moe",
+      "description": "备用域名 2 (CF Workers)"
+    },
+    {
+      "url": "https://60s-api.114128.xyz",
+      "description": "备用域名 3 (Deno Deploy)"
+    },
+    {
+      "url": "https://60s-api-cf.114128.xyz",
+      "description": "备用域名 4 (CF Workers)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "日更资讯",
+      "description": "每日更新的资讯类API，包括60秒读懂世界、汇率换算、必应壁纸、历史上的今天等"
+    },
+    {
+      "name": "热搜榜单",
+      "description": "各大平台的热搜榜单API，包括哔哩哔哩、抖音、知乎、微博、头条等"
+    },
+    {
+      "name": "实用功能",
+      "description": "实用工具类API，包括翻译、百科、Epic游戏、IP查询、哈希计算等"
+    },
+    {
+      "name": "娱乐消遣",
+      "description": "娱乐类API，包括段子、一言、答案之书、运势、唱歌音频等"
+    }
+  ],
+  "paths": {
+    "/v2/60s": {
+      "get": {
+        "tags": ["日更资讯"],
+        "summary": "60秒读懂世界",
+        "description": "获取每日60秒读懂世界新闻资讯，支持多种返回格式",
+        "parameters": [
+          {
+            "name": "encoding",
+            "in": "query",
+            "description": "返回格式",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["json", "text", "image", "image-proxy"],
+              "default": "json"
+            }
+          },
+          {
+            "name": "v2",
+            "in": "query",
+            "description": "版本标识，设置为1使用V2格式",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "enum": [1]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取60秒读懂世界资讯",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsResponse"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/exchange": {
+      "get": {
+        "tags": ["日更资讯"],
+        "summary": "汇率换算",
+        "description": "获取实时汇率信息和货币换算",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "源货币代码",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "USD"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "目标货币代码",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "CNY"
+            }
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "description": "换算金额",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取汇率信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExchangeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/bing": {
+      "get": {
+        "tags": ["日更资讯"],
+        "summary": "必应壁纸",
+        "description": "获取必应每日壁纸",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "日期，格式 YYYY-MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "resolution",
+            "in": "query",
+            "description": "分辨率",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "1920x1080"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取必应壁纸",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BingWallpaperResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/history": {
+      "get": {
+        "tags": ["日更资讯"],
+        "summary": "历史上的今天",
+        "description": "获取历史上的今天发生的事件",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "查询日期，格式 MM-DD",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{2}-\\d{2}$",
+              "example": "01-01"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取历史事件",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/bilibili/hot": {
+      "get": {
+        "tags": ["热搜榜单"],
+        "summary": "哔哩哔哩热搜",
+        "description": "获取哔哩哔哩热搜榜单",
+        "responses": {
+          "200": {
+            "description": "成功获取哔哩哔哩热搜",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HotSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/douyin/hot": {
+      "get": {
+        "tags": ["热搜榜单"],
+        "summary": "抖音热搜",
+        "description": "获取抖音热搜榜单",
+        "responses": {
+          "200": {
+            "description": "成功获取抖音热搜",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HotSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/zhihu/hot": {
+      "get": {
+        "tags": ["热搜榜单"],
+        "summary": "知乎热榜",
+        "description": "获取知乎热榜内容",
+        "responses": {
+          "200": {
+            "description": "成功获取知乎热榜",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HotSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/weibo/hot": {
+      "get": {
+        "tags": ["热搜榜单"],
+        "summary": "微博热搜",
+        "description": "获取微博热搜榜单",
+        "responses": {
+          "200": {
+            "description": "成功获取微博热搜",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HotSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/toutiao/hot": {
+      "get": {
+        "tags": ["热搜榜单"],
+        "summary": "头条热搜",
+        "description": "获取今日头条热搜榜单",
+        "responses": {
+          "200": {
+            "description": "成功获取头条热搜",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HotSearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/translate": {
+      "get": {
+        "tags": ["实用功能"],
+        "summary": "在线翻译",
+        "description": "提供多语言在线翻译服务",
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "待翻译文本",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "源语言",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "auto"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "目标语言",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "zh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "翻译成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranslateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/wiki": {
+      "get": {
+        "tags": ["实用功能"],
+        "summary": "百科查询",
+        "description": "查询百科词条信息",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "查询关键词",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "description": "语言版本",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "zh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WikiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/epic/free": {
+      "get": {
+        "tags": ["实用功能"],
+        "summary": "Epic 免费游戏",
+        "description": "获取 Epic 商店当前免费游戏信息",
+        "responses": {
+          "200": {
+            "description": "成功获取免费游戏信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EpicFreeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/ip": {
+      "get": {
+        "tags": ["实用功能"],
+        "summary": "IP 地址查询",
+        "description": "查询 IP 地址归属地信息",
+        "parameters": [
+          {
+            "name": "ip",
+            "in": "query",
+            "description": "IP地址，默认查询请求者IP",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "ipv4"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/hash": {
+      "get": {
+        "tags": ["实用功能"],
+        "summary": "哈希计算",
+        "description": "计算文本的各种哈希值",
+        "parameters": [
+          {
+            "name": "text",
+            "in": "query",
+            "description": "待计算文本",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "哈希类型",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["md5", "sha1", "sha256", "sha512"],
+              "default": "md5"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "计算成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HashResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/joke": {
+      "get": {
+        "tags": ["娱乐消遣"],
+        "summary": "随机段子",
+        "description": "获取随机笑话段子",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "段子类型",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JokeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/hitokoto": {
+      "get": {
+        "tags": ["娱乐消遣"],
+        "summary": "一言语录",
+        "description": "获取随机一言语录",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "语录分类",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HitokotoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/answer": {
+      "get": {
+        "tags": ["娱乐消遣"],
+        "summary": "答案之书",
+        "description": "获取答案之书的随机回答",
+        "parameters": [
+          {
+            "name": "question",
+            "in": "query",
+            "description": "问题内容",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnswerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/fortune": {
+      "get": {
+        "tags": ["娱乐消遣"],
+        "summary": "运势查询",
+        "description": "查询今日运势",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "运势类型",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FortuneResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/music": {
+      "get": {
+        "tags": ["娱乐消遣"],
+        "summary": "唱歌音频",
+        "description": "获取随机唱歌音频",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MusicResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "响应状态码",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "description": "响应消息",
+            "example": "success"
+          },
+          "timestamp": {
+            "type": "integer",
+            "description": "时间戳",
+            "example": 1640995200000
+          }
+        },
+        "required": ["code", "message", "timestamp"]
+      },
+      "NewsResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "标题"
+                  },
+                  "news": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "新闻列表"
+                  },
+                  "tip": {
+                    "type": "string",
+                    "description": "每日一句"
+                  },
+                  "date": {
+                    "type": "string",
+                    "description": "日期"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ExchangeResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "源货币"
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "目标货币"
+                  },
+                  "rate": {
+                    "type": "number",
+                    "description": "汇率"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "description": "换算金额"
+                  },
+                  "result": {
+                    "type": "number",
+                    "description": "换算结果"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "BingWallpaperResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "壁纸标题"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "壁纸URL"
+                  },
+                  "copyright": {
+                    "type": "string",
+                    "description": "版权信息"
+                  },
+                  "date": {
+                    "type": "string",
+                    "description": "日期"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "HistoryResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "year": {
+                      "type": "string",
+                      "description": "年份"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "事件标题"
+                    },
+                    "desc": {
+                      "type": "string",
+                      "description": "事件描述"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "HotSearchResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "rank": {
+                      "type": "integer",
+                      "description": "排名"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "标题"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "链接"
+                    },
+                    "hot": {
+                      "type": "string",
+                      "description": "热度"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TranslateResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "源语言"
+                  },
+                  "to": {
+                    "type": "string",
+                    "description": "目标语言"
+                  },
+                  "original": {
+                    "type": "string",
+                    "description": "原文"
+                  },
+                  "result": {
+                    "type": "string",
+                    "description": "翻译结果"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "WikiResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "词条标题"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "词条摘要"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "词条链接"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "EpicFreeResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "description": "游戏标题"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "游戏描述"
+                    },
+                    "image": {
+                      "type": "string",
+                      "description": "游戏图片"
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "游戏链接"
+                    },
+                    "startDate": {
+                      "type": "string",
+                      "description": "开始时间"
+                    },
+                    "endDate": {
+                      "type": "string",
+                      "description": "结束时间"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "IpResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "ip": {
+                    "type": "string",
+                    "description": "IP地址"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "国家"
+                  },
+                  "region": {
+                    "type": "string",
+                    "description": "地区"
+                  },
+                  "city": {
+                    "type": "string",
+                    "description": "城市"
+                  },
+                  "isp": {
+                    "type": "string",
+                    "description": "运营商"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "HashResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "original": {
+                    "type": "string",
+                    "description": "原文"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "哈希类型"
+                  },
+                  "result": {
+                    "type": "string",
+                    "description": "哈希结果"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "JokeResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "段子内容"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "段子类型"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "HitokotoResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "一言内容"
+                  },
+                  "author": {
+                    "type": "string",
+                    "description": "作者"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "分类"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "AnswerResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "description": "问题"
+                  },
+                  "answer": {
+                    "type": "string",
+                    "description": "答案"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "FortuneResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "运势类型"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "运势内容"
+                  },
+                  "score": {
+                    "type": "integer",
+                    "description": "运势评分"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "MusicResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "歌曲标题"
+                  },
+                  "artist": {
+                    "type": "string",
+                    "description": "艺术家"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "音频链接"
+                  },
+                  "duration": {
+                    "type": "integer",
+                    "description": "时长（秒）"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
