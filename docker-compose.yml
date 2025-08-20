@@ -16,7 +16,7 @@ services:
       # 时区设置
       - TZ=Asia/Shanghai
       # API配置环境变量（可选，用于覆盖config.json）
-      - API_BASE_URL=https://top.ilib.vip
+      #- API_BASE_URL=https://top.ilib.vip
       # - API_WEIBO_ENDPOINT=/api/hotlist/wbHot
       # - API_ZHIHU_ENDPOINT=/api/hotlist/zhihuHot
       # - API_DOUYIN_ENDPOINT=/api/hotlist/douyinHot
