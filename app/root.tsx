@@ -6,6 +6,8 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { Toaster } from "sonner";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -34,6 +36,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster 
+          position="top-right"
+          richColors
+          closeButton
+          expand={false}
+          visibleToasts={3}
+        />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -42,7 +51,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <ThemeProvider>
+      <Outlet />
+    </ThemeProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
