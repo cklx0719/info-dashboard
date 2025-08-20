@@ -185,6 +185,8 @@ app/
 - **Hitokoto**: [hitokoto.cn](https://hitokoto.cn) - 提供一言语录API服务
 - **各平台官方API**: 微博、知乎、抖音、今日头条等热搜数据来源于各平台官方接口
 
+> API服务由 [60s API](https://github.com/vikiboss/60s) 提供，感谢 [@vikiboss](https://github.com/vikiboss) 的开源贡献！
+
 ## 🙏 特别感谢
 
 本项目使用的API服务来源于 [@vikiboss](https://github.com/vikiboss) 开发的 [60s API](https://github.com/vikiboss/60s) 项目。
@@ -195,12 +197,14 @@ app/
 
 感谢以下开源项目和服务提供商：
 
-- [60s API](https://github.com/vikiboss/60s) - 高质量、开源、可靠的API聚合服务
+- **[60s API](https://github.com/vikiboss/60s)** - 由 [@vikiboss](https://github.com/vikiboss) 开发的高质量、开源、可靠的API聚合服务
 - [Hitokoto](https://hitokoto.cn) - 一言语录服务
 - [React](https://reactjs.org) - 前端框架
 - [Vite](https://vitejs.dev) - 构建工具
 - [TailwindCSS](https://tailwindcss.com) - CSS框架
 - [Lucide](https://lucide.dev) - 图标库
+
+特别感谢 [@vikiboss](https://github.com/vikiboss) 提供的优秀开源项目 [60s API](https://github.com/vikiboss/60s)，为开发者提供了稳定可靠的API服务，让本项目能够顺利运行。
 
 ## 📄 许可证
 

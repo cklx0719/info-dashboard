@@ -7,6 +7,7 @@
 本项目使用的API接口来源于以下服务提供商：
 
 - **60s API** ([github.com/vikiboss/60s](https://github.com/vikiboss/60s)): 提供新闻、壁纸、翻译、热搜等聚合API服务
+- **感谢原作者 Viki** 提供的高质量、开源、可靠、全球CDN加速的开放API集合
 - **Hitokoto** ([hitokoto.cn](https://hitokoto.cn)): 提供一言语录API服务
 - **各平台官方API**: 微博、知乎、抖音、今日头条等热搜数据来源于各平台官方接口
 
@@ -26,9 +27,11 @@
 ## 🙏 致谢
 
 感谢以下API服务提供商的开源贡献：
-- [60s API](https://github.com/vikiboss/60s) - 高质量、开源、可靠的API聚合服务
+- **[60s API](https://github.com/vikiboss/60s)** - 由 Viki 开发的高质量、开源、可靠的API聚合服务
 - [Hitokoto](https://hitokoto.cn) - 一言语录服务
 - 各大平台的开放API接口
+
+特别感谢 [@vikiboss](https://github.com/vikiboss) 提供的优秀开源项目，为开发者提供了稳定可靠的API服务。
 
 ## API 配置管理
 
@@ -39,7 +42,7 @@
 ### 配置文件结构
 
 ```typescript
-export const API_CONFIG = {
+export const v2_CONFIG = {
   // 基础URL - 使用60s API服务
   BASE_URL: 'https://60s-cf.viki.moe',
   
@@ -51,6 +54,9 @@ export const API_CONFIG = {
   
   // 一言语录 - Hitokoto官方API
   HITOKOTO: 'https://60s-cf.viki.moe/v2/hitokoto',
+  
+  // IP信息 - IP查询API
+  IP_INFO: 'https://60s-cf.viki.moe/v2/ip',
   
   // 翻译API - 百度翻译API
   TRANSLATE: 'https://60s-cf.viki.moe/v2/fanyi',
@@ -69,24 +75,28 @@ export const API_CONFIG = {
   LUCK: 'https://60s-cf.viki.moe/v2/luck',
   EXCHANGE_RATE: 'https://60s-cf.viki.moe/v2/exchange_rate',
   HASH: 'https://60s-cf.viki.moe/v2/hash',
-  RANDOM_MUSIC: 'https://60s-cf.viki.moe/v2/changya'
+  RANDOM_MUSIC: 'https://60s-cf.viki.moe/v2/changya',
+  HISTORY: 'https://60s-cf.viki.moe/v2/today_in_history',
+  EPIC_GAMES: 'https://60s-cf.viki.moe/v2/epic',
+  OG_INFO: 'https://60s-cf.viki.moe/v2/og'
 };
 
-export const API_OPTIONS = {
+export const v2_OPTIONS = {
   method: 'GET',
   headers: {
     'Content-Type': 'application/json'
   }
 };
 
-export const getApiUrl = (endpoint: string, params?: Record<string, string>) => {
-  const url = new URL(endpoint);
+export const getv2Url = (endpoint: keyof typeof v2_CONFIG, params?: Record<string, string>) => {
+  let url = v2_CONFIG[endpoint];
+  
   if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      url.searchParams.append(key, value);
-    });
+    const searchParams = new URLSearchParams(params);
+    url += `?${searchParams.toString()}`;
   }
-  return url.toString();
+  
+  return url;
 };
 ```
 
@@ -99,13 +109,13 @@ export const getApiUrl = (endpoint: string, params?: Record<string, string>) => 
 ### 使用示例
 
 ```typescript
-import { API_CONFIG, getApiUrl } from '../config/api';
+import { v2_CONFIG, getv2Url } from '../config/api';
 
 // 获取新闻数据
-const response = await fetch(API_CONFIG.NEWS);
+const response = await fetch(v2_CONFIG.NEWS);
 
 // 带参数的API调用
-const translateUrl = getApiUrl(API_CONFIG.TRANSLATE, {
+const translateUrl = getv2Url('TRANSLATE', {
   text: '你好',
   from: 'zh-CHS',
   to: 'en'
