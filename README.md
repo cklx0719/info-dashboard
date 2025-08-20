@@ -2,9 +2,17 @@
 
 一个现代化的单页面应用（SPA），集成多种实用信息查询功能，包括新闻、翻译、热搜、壁纸等。
 
+[![GitHub Release](https://img.shields.io/github/v/release/cklx0719/info-dashboard)](https://github.com/cklx0719/info-dashboard/releases)
 [![Docker Hub](https://img.shields.io/docker/v/cklx0719/info-dashboard?label=Docker%20Hub)](https://hub.docker.com/r/cklx0719/info-dashboard)
-[![GitHub](https://img.shields.io/github/license/cklx0719/info-dashboard)](https://github.com/cklx0719/info-dashboard)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/cklx0719/info-dashboard)
+[![GitHub License](https://img.shields.io/github/license/cklx0719/info-dashboard)](https://github.com/cklx0719/info-dashboard/blob/master/LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/cklx0719/info-dashboard)](https://github.com/cklx0719/info-dashboard)
+[![GitHub Forks](https://img.shields.io/github/forks/cklx0719/info-dashboard)](https://github.com/cklx0719/info-dashboard)
+
+## 🔗 项目链接
+
+- **GitHub 仓库**: [https://github.com/cklx0719/info-dashboard](https://github.com/cklx0719/info-dashboard)
+- **Docker Hub**: [https://hub.docker.com/r/cklx0719/info-dashboard](https://hub.docker.com/r/cklx0719/info-dashboard)
+- **最新发布**: [v0.2.0](https://github.com/cklx0719/info-dashboard/releases/tag/v0.2.0)
 
 ## 功能特性
 
