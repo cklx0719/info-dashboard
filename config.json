@@ -1,0 +1,29 @@
+{
+  "baseUrl": "https://60s-cf.viki.moe",
+  "news": "https://60s-cf.viki.moe/v2/60s",
+  "bingWallpaper": "https://60s-cf.viki.moe/v2/bing",
+  "hitokoto": "https://60s-cf.viki.moe/v2/hitokoto",
+  "ip": "https://60s-cf.viki.moe/v2/ip",
+  "translateLangs": "https://60s-cf.viki.moe/v2/fanyi/langs",
+  "translate": "https://60s-cf.viki.moe/v2/fanyi",
+  "luck": "https://60s-cf.viki.moe/v2/luck",
+  "sickText": "https://60s-cf.viki.moe/v2/fabing",
+  "randomMusic": "https://60s-cf.viki.moe/v2/changya",
+  "todayInHistory": "https://60s-cf.viki.moe/v2/today_in_history",
+  "bilibiliHot": "https://60s-cf.viki.moe/v2/bili",
+  "epicGames": "https://60s-cf.viki.moe/v2/epic",
+  "randomJoke": "https://60s-cf.viki.moe/v2/duanzi",
+  "weiboHot": "https://60s-cf.viki.moe/v2/weibo",
+  "zhihuHot": "https://60s-cf.viki.moe/v2/zhihu",
+  "douyinHot": "https://60s-cf.viki.moe/v2/douyin",
+  "toutiaoHot": "https://60s-cf.viki.moe/v2/toutiao",
+  "hash": "https://60s-cf.viki.moe/v2/hash",
+  "exchangeRate": "https://60s-cf.viki.moe/v2/exchange_rate",
+  "og": "https://60s-cf.viki.moe/v2/og",
+  "API_OPTIONS": {
+    "method": "GET",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

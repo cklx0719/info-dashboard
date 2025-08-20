@@ -65,13 +65,20 @@ EOF
 # 从构建阶段复制静态文件
 COPY --from=builder /app/build/client /usr/share/nginx/html
 
+# 复制配置文件到静态目录（可被挂载覆盖）
+COPY --from=builder /app/config.json /usr/share/nginx/html/config.json
+
 # 创建配置文件目录并设置权限
 RUN mkdir -p /app/config && \
     chown -R nginx:nginx /app/config && \
     chown -R nginx:nginx /usr/share/nginx/html
 
-# 复制API配置文件到可挂载目录
-COPY --from=builder /app/app/config/api.ts /app/config/api.ts
+# 复制配置文件到可挂载目录（用于docker-compose挂载）
+COPY --from=builder /app/config.json /app/config/config.json
+
+# 复制启动脚本
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # 暴露端口
 EXPOSE 80
@@ -80,5 +87,5 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
 
-# 启动nginx
-CMD ["nginx", "-g", "daemon off;"]
+# 使用启动脚本
+ENTRYPOINT ["/docker-entrypoint.sh"]

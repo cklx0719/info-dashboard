@@ -1,0 +1,31 @@
+{
+  "API_CONFIG": {
+    "BASE_URL": "https://top.ilib.vip",
+    "NEWS": "https://top.ilib.vip/v2/60s",
+    "BING_WALLPAPER": "https://top.ilib.vip/v2/bing",
+    "HITOKOTO": "https://top.ilib.vip",
+    "IP_INFO": "https://top.ilib.vip/v2/getIpInfo",
+    "LANGUAGES": "https://top.ilib.vip/v2/fanyi/langs",
+    "TRANSLATE": "https://top.ilib.vip/v2/fanyi",
+    "LUCK": "https://top.ilib.vip/v2/horoscope",
+    "SICK_TEXT": "https://top.ilib.vip/v2/text/love",
+    "RANDOM_MUSIC": "https://top.ilib.vip/v2/music/netease",
+    "HISTORY": "https://top.ilib.vip/v2/history",
+    "BILIBILI_HOT": "https://top.ilib.vip/v2/bilihot",
+    "EPIC_GAMES": "https://top.ilib.vip/v2/epic",
+    "RANDOM_JOKE": "https://top.ilib.vip/v2/text/joke",
+    "WEIBO_HOT": "https://top.ilib.vip/v2/weibohot",
+    "ZHIHU_HOT": "https://top.ilib.vip/v2/zhihuhot",
+    "DOUYIN_HOT": "https://top.ilib.vip/v2/douyinhot",
+    "TOUTIAO_HOT": "https://top.ilib.vip/v2/toutiaohot",
+    "HASH": "https://top.ilib.vip/v2/hash",
+    "EXCHANGE_RATE": "https://top.ilib.vip/v2/exchange",
+    "OG_INFO": "https://top.ilib.vip/v2/og"
+  },
+  "API_OPTIONS": {
+    "method": "GET",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

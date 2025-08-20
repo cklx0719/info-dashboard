@@ -1,6 +1,6 @@
 {
   "name": "info-dashboard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "一个现代化的信息聚合仪表板，集成新闻、热搜、翻译、汇率等多种实用功能",
   "author": "cklx0719",
   "license": "MIT",

@@ -28,7 +28,7 @@ import {
   Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { API_CONFIG, getApiUrl } from '../config/api';
+import { getApiUrl } from '../config/runtime-config';
 
 const InfoDashboard = () => {
   // 状态管理
@@ -99,7 +99,8 @@ const InfoDashboard = () => {
   const fetchNews = async () => {
     setLoading(prev => ({ ...prev, news: true }));
     try {
-      const response = await fetch(API_CONFIG.NEWS);
+      const url = await getApiUrl('NEWS');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setNewsData(result.data);
@@ -115,7 +116,8 @@ const InfoDashboard = () => {
   const fetchBingWallpaper = async () => {
     setLoading(prev => ({ ...prev, bing: true }));
     try {
-      const response = await fetch(API_CONFIG.BING_WALLPAPER);
+      const url = await getApiUrl('BING_WALLPAPER');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setBingWallpaper(result.data);
@@ -131,7 +133,8 @@ const InfoDashboard = () => {
   const fetchHitokoto = async () => {
     setLoading(prev => ({ ...prev, hitokoto: true }));
     try {
-      const response = await fetch(API_CONFIG.HITOKOTO);
+      const url = await getApiUrl('HITOKOTO');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         // 修复数据字段映射：API返回的是 {hitokoto: "内容"}，需要转换为 {text: "内容"}
@@ -153,7 +156,8 @@ const InfoDashboard = () => {
   const fetchIP = async () => {
     setLoading(prev => ({ ...prev, ip: true }));
     try {
-      const response = await fetch(API_CONFIG.IP_INFO);
+      const url = await getApiUrl('IP_INFO');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         // 只保留IP地址信息
@@ -172,7 +176,8 @@ const InfoDashboard = () => {
   const fetchLanguages = async () => {
     setLoading(prev => ({ ...prev, languages: true }));
     try {
-      const response = await fetch(API_CONFIG.LANGUAGES);
+      const url = await getApiUrl('LANGUAGES');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200 && result.data) {
         // 修复数据字段映射：API返回的是 {code: "语言代码", label: "语言名称"}，需要转换为 {code: "语言代码", name: "语言名称"}
@@ -196,7 +201,8 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, translate: true }));
     try {
-      const response = await fetch(getApiUrl('TRANSLATE', { from: translateFrom, to: translateTo, text: translateText }));
+      const url = await getApiUrl('TRANSLATE', { from: translateFrom, to: translateTo, text: translateText });
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         // 修复数据字段映射：API返回的是 {source: {text: "原文"}, target: {text: "译文"}}，需要转换为前端期望的格式
@@ -254,7 +260,8 @@ const InfoDashboard = () => {
   const fetchLuck = async () => {
     setLoading(prev => ({ ...prev, luck: true }));
     try {
-      const response = await fetch(API_CONFIG.LUCK);
+      const url = await getApiUrl('LUCK');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setLuckData(result.data);
@@ -270,7 +277,8 @@ const InfoDashboard = () => {
   const fetchSickText = async () => {
     setLoading(prev => ({ ...prev, sickText: true }));
     try {
-      const response = await fetch(API_CONFIG.SICK_TEXT);
+      const url = await getApiUrl('SICK_TEXT');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         // 修复数据字段映射：API返回的是 {saying: "内容"}，需要转换为前端期望的 {fabing: "内容"}
@@ -290,7 +298,8 @@ const InfoDashboard = () => {
   const fetchSong = async () => {
     setLoading(prev => ({ ...prev, song: true }));
     try {
-      const response = await fetch(API_CONFIG.RANDOM_MUSIC);
+      const url = await getApiUrl('RANDOM_MUSIC');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setSongData(result.data);
@@ -306,7 +315,8 @@ const InfoDashboard = () => {
   const fetchHistory = async () => {
     setLoading(prev => ({ ...prev, history: true }));
     try {
-      const response = await fetch(API_CONFIG.HISTORY);
+      const url = await getApiUrl('HISTORY');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         // 修复数据字段映射：API返回的是 {items: [...]}，需要提取items数组
@@ -323,7 +333,8 @@ const InfoDashboard = () => {
   const fetchBilibiliHot = async () => {
     setLoading(prev => ({ ...prev, bilibiliHot: true }));
     try {
-      const response = await fetch(API_CONFIG.BILIBILI_HOT);
+      const url = await getApiUrl('BILIBILI_HOT');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setBilibiliHotData(result.data);
@@ -339,7 +350,8 @@ const InfoDashboard = () => {
   const fetchEpicGames = async () => {
     setLoading(prev => ({ ...prev, epicGames: true }));
     try {
-      const response = await fetch(API_CONFIG.EPIC_GAMES);
+      const url = await getApiUrl('EPIC_GAMES');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setEpicGamesData(result.data);
@@ -355,7 +367,8 @@ const InfoDashboard = () => {
   const fetchRandomJoke = async () => {
     setLoading(prev => ({ ...prev, randomJoke: true }));
     try {
-      const response = await fetch(API_CONFIG.RANDOM_JOKE);
+      const url = await getApiUrl('RANDOM_JOKE');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setRandomJoke(result.data);
@@ -373,7 +386,8 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, hash: true }));
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.HASH, { content: hashText }));
+      const url = await getApiUrl('HASH', { content: hashText });
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         // 修复数据字段映射：过滤掉source字段，只保留哈希算法结果
@@ -393,7 +407,8 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, exchangeRate: true }));
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.EXCHANGE_RATE, { from: fromCurrency, to: toCurrency, amount: exchangeAmount }));
+      const url = await getApiUrl('EXCHANGE_RATE', { from: fromCurrency, to: toCurrency, amount: exchangeAmount });
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         // 修复数据字段映射：API返回 {base_code, updated, rates}，需要转换为前端期望的格式
@@ -417,7 +432,8 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, ogInfo: true }));
     try {
-      const response = await fetch(getApiUrl(API_CONFIG.OG_INFO, { url: ogUrl }));
+      const apiUrl = await getApiUrl('OG_INFO', { url: ogUrl });
+      const response = await fetch(apiUrl);
       const result = await response.json();
       if (result.code === 200) {
         setOgInfoData(result.data);
@@ -434,7 +450,8 @@ const InfoDashboard = () => {
   const fetchWeiboHot = async () => {
     setLoading(prev => ({ ...prev, weiboHot: true }));
     try {
-      const response = await fetch(API_CONFIG.WEIBO_HOT);
+      const url = await getApiUrl('WEIBO_HOT');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setWeiboHotData(result.data);
@@ -451,7 +468,8 @@ const InfoDashboard = () => {
   const fetchZhihuHot = async () => {
     setLoading(prev => ({ ...prev, zhihuHot: true }));
     try {
-      const response = await fetch(API_CONFIG.ZHIHU_HOT);
+      const url = await getApiUrl('ZHIHU_HOT');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setZhihuHotData(result.data);
@@ -468,7 +486,8 @@ const InfoDashboard = () => {
   const fetchDouyinHot = async () => {
     setLoading(prev => ({ ...prev, douyinHot: true }));
     try {
-      const response = await fetch(API_CONFIG.DOUYIN_HOT);
+      const url = await getApiUrl('DOUYIN_HOT');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setDouyinHotData(result.data);
@@ -485,7 +504,8 @@ const InfoDashboard = () => {
   const fetchToutiaoHot = async () => {
     setLoading(prev => ({ ...prev, toutiaoHot: true }));
     try {
-      const response = await fetch(API_CONFIG.TOUTIAO_HOT);
+      const url = await getApiUrl('TOUTIAO_HOT');
+      const response = await fetch(url);
       const result = await response.json();
       if (result.code === 200) {
         setToutiaoHotData(result.data);

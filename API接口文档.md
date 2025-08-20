@@ -6,9 +6,15 @@
 
 本项目使用的API接口来源于以下服务提供商：
 
-- **韩小韩API** ([api.vvhan.com](https://api.vvhan.com)): 提供新闻、壁纸、翻译、热搜等聚合API服务
+- **60s API** ([github.com/vikiboss/60s](https://github.com/vikiboss/60s)): 提供新闻、壁纸、翻译、热搜等聚合API服务
 - **Hitokoto** ([hitokoto.cn](https://hitokoto.cn)): 提供一言语录API服务
 - **各平台官方API**: 微博、知乎、抖音、今日头条等热搜数据来源于各平台官方接口
+
+## 🙏 特别感谢
+
+本项目使用的API服务来源于 [@vikiboss](https://github.com/vikiboss) 开发的 [60s API](https://github.com/vikiboss/60s) 项目。
+
+感谢 @vikiboss 提供的高质量、开源、可靠、全球 CDN 加速的开放 API 集合，为开发者提供了便利的数据接口服务。
 
 ## ⚖️ 版权声明
 
@@ -20,7 +26,7 @@
 ## 🙏 致谢
 
 感谢以下API服务提供商的开源贡献：
-- [韩小韩API](https://api.vvhan.com) - 免费API聚合服务
+- [60s API](https://github.com/vikiboss/60s) - 高质量、开源、可靠的API聚合服务
 - [Hitokoto](https://hitokoto.cn) - 一言语录服务
 - 各大平台的开放API接口
 
@@ -34,36 +40,36 @@
 
 ```typescript
 export const API_CONFIG = {
-  // 基础URL - 使用官方API聚合服务
-  BASE_URL: 'https://api.vvhan.com',
+  // 基础URL - 使用60s API服务
+  BASE_URL: 'https://60s-cf.viki.moe',
   
   // 60秒读懂世界 - 知乎日报API
-  NEWS: 'https://api.vvhan.com/api/60s',
+  NEWS: 'https://60s-cf.viki.moe/v2/60s',
   
   // 必应壁纸 - Microsoft Bing官方API
-  BING_WALLPAPER: 'https://api.vvhan.com/api/bing',
+  BING_WALLPAPER: 'https://60s-cf.viki.moe/v2/bing',
   
   // 一言语录 - Hitokoto官方API
-  HITOKOTO: 'https://v1.hitokoto.cn',
+  HITOKOTO: 'https://60s-cf.viki.moe/v2/hitokoto',
   
   // 翻译API - 百度翻译API
-  TRANSLATE: 'https://api.vvhan.com/api/fanyi',
-  LANGUAGES: 'https://api.vvhan.com/api/fanyi/langs',
+  TRANSLATE: 'https://60s-cf.viki.moe/v2/fanyi',
+  LANGUAGES: 'https://60s-cf.viki.moe/v2/fanyi/langs',
   
   // 热搜数据 - 各平台官方API聚合
-  BILIBILI_HOT: 'https://api.vvhan.com/api/bilihot',
-  WEIBO_HOT: 'https://api.vvhan.com/api/weibohot',
-  ZHIHU_HOT: 'https://api.vvhan.com/api/zhihuhot',
-  DOUYIN_HOT: 'https://api.vvhan.com/api/douyinhot',
-  TOUTIAO_HOT: 'https://api.vvhan.com/api/toutiaohot',
+  BILIBILI_HOT: 'https://60s-cf.viki.moe/v2/bili',
+  WEIBO_HOT: 'https://60s-cf.viki.moe/v2/weibo',
+  ZHIHU_HOT: 'https://60s-cf.viki.moe/v2/zhihu',
+  DOUYIN_HOT: 'https://60s-cf.viki.moe/v2/douyin',
+  TOUTIAO_HOT: 'https://60s-cf.viki.moe/v2/toutiao',
   
   // 其他功能API
-  RANDOM_JOKE: 'https://api.vvhan.com/api/text/joke',
-  SICK_TEXT: 'https://api.vvhan.com/api/text/love',
-  LUCK: 'https://api.vvhan.com/api/horoscope',
-  EXCHANGE_RATE: 'https://api.vvhan.com/api/exchange',
-  HASH: 'https://api.vvhan.com/api/hash',
-  RANDOM_MUSIC: 'https://api.vvhan.com/api/music/netease'
+  RANDOM_JOKE: 'https://60s-cf.viki.moe/v2/duanzi',
+  SICK_TEXT: 'https://60s-cf.viki.moe/v2/fabing',
+  LUCK: 'https://60s-cf.viki.moe/v2/luck',
+  EXCHANGE_RATE: 'https://60s-cf.viki.moe/v2/exchange_rate',
+  HASH: 'https://60s-cf.viki.moe/v2/hash',
+  RANDOM_MUSIC: 'https://60s-cf.viki.moe/v2/changya'
 };
 
 export const API_OPTIONS = {
