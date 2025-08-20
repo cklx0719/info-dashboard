@@ -85,7 +85,7 @@ npm run build
 
 1. **下载配置文件**：
    ```bash
-   wget https://raw.githubusercontent.com/cklx0719/info-dashboard/main/docker-compose.yml
+   wget https://raw.githubusercontent.com/cklx0719/info-dashboard/master/docker-compose.yml
    ```
 
 2. **启动服务**：
@@ -106,7 +106,7 @@ docker pull cklx0719/info-dashboard:latest
 docker run -d \
   --name info-dashboard \
   -p 3000:80 \
-  -v $(pwd)/app/config/api.ts:/app/config/api.ts:ro \
+  -v ./config.json:/usr/share/nginx/html/config.json:ro \
   --restart unless-stopped \
   cklx0719/info-dashboard:latest
 ```
@@ -114,7 +114,7 @@ docker run -d \
 #### Docker 配置说明
 
 - **端口映射**: 容器内部使用80端口，可映射到主机任意端口
-- **配置文件映射**: 可挂载 `api.ts` 配置文件自定义API地址
+- **配置文件映射**: 可挂载 `config.json` 配置文件自定义API地址
 - **日志目录**: 可挂载 `/var/log/nginx` 查看访问日志
 - **多架构支持**: 支持 `amd64` 和 `arm64` 架构
 
