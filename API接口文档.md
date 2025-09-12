@@ -33,71 +33,99 @@
 
 特别感谢 [@vikiboss](https://github.com/vikiboss) 提供的优秀开源项目，为开发者提供了稳定可靠的API服务。
 
-## API 配置管理
+## 🔧 API 配置管理
 
 ### 配置文件位置
 
-`app/config/api.ts` - 集中管理所有外部API地址
+- `app/config/api.ts` - API 域名和端点配置
+- `app/utils/api-failover.ts` - 故障转移逻辑实现
+- `app/config/runtime-config.ts` - 运行时配置管理
 
-### 配置文件结构
+### 🔄 故障转移机制
 
+本项目采用智能故障转移机制，确保API服务的高可用性：
+
+#### 多域名配置
 ```typescript
-export const v2_CONFIG = {
-  // 基础URL - 使用60s API服务
-  BASE_URL: 'https://60s-cf.viki.moe',
-  
-  // 60秒读懂世界 - 知乎日报API
-  NEWS: 'https://60s-cf.viki.moe/v2/60s',
-  
-  // 必应壁纸 - Microsoft Bing官方API
-  BING_WALLPAPER: 'https://60s-cf.viki.moe/v2/bing',
-  
-  // 一言语录 - Hitokoto官方API
-  HITOKOTO: 'https://60s-cf.viki.moe/v2/hitokoto',
-  
-  // IP信息 - IP查询API
-  IP_INFO: 'https://60s-cf.viki.moe/v2/ip',
-  
-  // 翻译API - 百度翻译API
-  TRANSLATE: 'https://60s-cf.viki.moe/v2/fanyi',
-  LANGUAGES: 'https://60s-cf.viki.moe/v2/fanyi/langs',
-  
-  // 热搜数据 - 各平台官方API聚合
-  BILIBILI_HOT: 'https://60s-cf.viki.moe/v2/bili',
-  WEIBO_HOT: 'https://60s-cf.viki.moe/v2/weibo',
-  ZHIHU_HOT: 'https://60s-cf.viki.moe/v2/zhihu',
-  DOUYIN_HOT: 'https://60s-cf.viki.moe/v2/douyin',
-  TOUTIAO_HOT: 'https://60s-cf.viki.moe/v2/toutiao',
-  
-  // 其他功能API
-  RANDOM_JOKE: 'https://60s-cf.viki.moe/v2/duanzi',
-  SICK_TEXT: 'https://60s-cf.viki.moe/v2/fabing',
-  LUCK: 'https://60s-cf.viki.moe/v2/luck',
-  EXCHANGE_RATE: 'https://60s-cf.viki.moe/v2/exchange_rate',
-  HASH: 'https://60s-cf.viki.moe/v2/hash',
-  RANDOM_MUSIC: 'https://60s-cf.viki.moe/v2/changya',
-  HISTORY: 'https://60s-cf.viki.moe/v2/today_in_history',
-  EPIC_GAMES: 'https://60s-cf.viki.moe/v2/epic',
-  OG_INFO: 'https://60s-cf.viki.moe/v2/og'
-};
+// app/config/api.ts
+export const API_DOMAINS = [
+  'https://top.ilib.vip',           // 当前默认域名
+  'https://60s.viki.moe',           // 主域名 (Deno Deploy)
+  'https://60s.b23.run',            // 备用域名 1 (Deno Deploy)
+  'https://60s-cf.viki.moe',        // 备用域名 2 (CF Workers)
+  'https://60s.114128.xyz',         // 备用域名 3 (Deno Deploy)
+  'https://60s-cf.114128.xyz'       // 备用域名 4 (CF Workers)
+]
+```
 
-export const v2_OPTIONS = {
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-};
+#### API 端点配置
+```typescript
+export const API_ENDPOINTS = {
+  SIXTY_SECONDS: '/v2/60s',         // 60秒读懂世界
+  BING: '/v2/bing',                 // 必应壁纸
+  HISTORY: '/v2/today_in_history',  // 历史上的今天
+  BILI: '/v2/bili',                 // 哔哩哔哩热搜
+  WEIBO: '/v2/weibo',               // 微博热搜
+  ZHIHU: '/v2/zhihu',               // 知乎热搜
+  DOUYIN: '/v2/douyin',             // 抖音热搜
+  TOUTIAO: '/v2/toutiao',           // 今日头条热搜
+  EPIC: '/v2/epic',                 // Epic免费游戏
+  WEATHER: '/v2/weather',           // 天气查询
+  BAIKE: '/v2/baike',               // 百科查询
+  FANYI: '/v2/fanyi',               // 翻译服务
+  IP: '/v2/ip',                     // IP信息查询
+  HASH: '/v2/hash',                 // 哈希计算
+  HITOKOTO: '/v2/hitokoto',         // 一言语录
+  DUANZI: '/v2/duanzi',             // 随机段子
+  LUCK: '/v2/luck',                 // 运势查询
+  CHANGYA: '/v2/changya',           // 随机音乐
+  FABING: '/v2/fabing',             // 发病文学
+  EXCHANGE_RATE: '/v2/exchange_rate', // 汇率换算
+  OG: '/v2/og'                      // 网页信息提取
+}
+```
 
-export const getv2Url = (endpoint: keyof typeof v2_CONFIG, params?: Record<string, string>) => {
-  let url = v2_CONFIG[endpoint];
-  
-  if (params) {
-    const searchParams = new URLSearchParams(params);
-    url += `?${searchParams.toString()}`;
+#### 故障转移配置
+```typescript
+export const FAILOVER_CONFIG = {
+  timeout: 5000,        // 请求超时时间(ms)
+  retryDelay: 1000,     // 重试延迟(ms)
+  maxRetries: 3,        // 每个域名最大重试次数
+  enableFailover: true  // 是否启用故障转移
+}
+```
+
+### 🚀 API 调用方式
+
+#### 使用故障转移API
+```typescript
+import { api } from '../utils/api-failover';
+
+// 获取新闻数据
+const result = await api.getSixtySeconds();
+if (result.success) {
+  console.log('数据:', result.data);
+  if (result.usedDomain !== 'https://top.ilib.vip') {
+    console.log('使用备用域名:', result.usedDomain);
   }
-  
-  return url;
-};
+} else {
+  console.error('请求失败:', result.error);
+}
+
+// 带参数的API调用
+const translateResult = await api.getTranslate({
+  text: '你好',
+  from: 'zh-CHS',
+  to: 'en'
+});
+```
+
+#### 故障转移特性
+- 🔄 **自动域名切换**: 主域名失败时自动尝试备用域名
+- ⏱️ **智能重试**: 每个域名最多重试3次，总超时5秒
+- 📊 **失败记录**: 记录失败域名，5分钟后重新尝试
+- 🚨 **用户提示**: 切换域名时显示友好提示
+- 🔍 **健康检查**: 支持检查所有域名状态
 ```
 
 ### 如何修改API地址

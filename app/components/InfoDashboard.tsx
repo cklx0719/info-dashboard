@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getApiUrl } from '../config/runtime-config';
+import { formatZhihuLinksInData } from '../utils/link-formatter';
+import { api, ApiFailover } from '../utils/api-failover';
 
 const InfoDashboard = () => {
   // 状态管理
@@ -99,12 +101,15 @@ const InfoDashboard = () => {
   const fetchNews = async () => {
     setLoading(prev => ({ ...prev, news: true }));
     try {
-      const url = await getApiUrl('NEWS');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setNewsData(result.data);
+      const result = await api.getSixtySeconds({ encoding: 'json' });
+      if (result.success && result.data?.code === 200) {
+        setNewsData(result.data.data);
         toast.success('60秒读懂世界已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取新闻失败');
@@ -116,12 +121,15 @@ const InfoDashboard = () => {
   const fetchBingWallpaper = async () => {
     setLoading(prev => ({ ...prev, bing: true }));
     try {
-      const url = await getApiUrl('BING_WALLPAPER');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setBingWallpaper(result.data);
+      const result = await api.getBingWallpaper();
+      if (result.success && result.data?.code === 200) {
+        setBingWallpaper(result.data.data);
         toast.success('必应壁纸已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取必应壁纸失败');
@@ -133,18 +141,21 @@ const InfoDashboard = () => {
   const fetchHitokoto = async () => {
     setLoading(prev => ({ ...prev, hitokoto: true }));
     try {
-      const url = await getApiUrl('HITOKOTO');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
+      const result = await api.getHitokoto();
+      if (result.success && result.data?.code === 200) {
         // 修复数据字段映射：API返回的是 {hitokoto: "内容"}，需要转换为 {text: "内容"}
         const transformedData = {
-          text: result.data.hitokoto,
-          author: result.data.author,
-          source: result.data.source
+          text: result.data.data.hitokoto,
+          author: result.data.data.author,
+          source: result.data.data.source
         };
         setHitokoto(transformedData);
         toast.success('一言语录已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取一言语录失败');
@@ -156,15 +167,18 @@ const InfoDashboard = () => {
   const fetchIP = async () => {
     setLoading(prev => ({ ...prev, ip: true }));
     try {
-      const url = await getApiUrl('IP_INFO');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
+      const result = await api.getIpInfo({ encoding: 'json' });
+      if (result.success && result.data?.code === 200) {
         // 只保留IP地址信息
         setIpInfo({
-          ip: result.data.ip
+          ip: result.data.data.ip
         });
         toast.success('IP信息已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取IP信息失败');
@@ -176,17 +190,20 @@ const InfoDashboard = () => {
   const fetchLanguages = async () => {
     setLoading(prev => ({ ...prev, languages: true }));
     try {
-      const url = await getApiUrl('LANGUAGES');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200 && result.data) {
+      const result = await api.getLanguages();
+      if (result.success && result.data?.code === 200 && result.data.data) {
         // 修复数据字段映射：API返回的是 {code: "语言代码", label: "语言名称"}，需要转换为 {code: "语言代码", name: "语言名称"}
-        const transformedLanguages = result.data.map((lang: any) => ({
+        const transformedLanguages = result.data.data.map((lang: any) => ({
           code: lang.code,
           name: lang.label
         }));
         setLanguages(transformedLanguages);
         toast.success('语言列表已加载');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       console.error('获取语言列表失败:', error);
@@ -201,18 +218,21 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, translate: true }));
     try {
-      const url = await getApiUrl('TRANSLATE', { from: translateFrom, to: translateTo, text: translateText });
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
+      const result = await api.getTranslate({ from: translateFrom, to: translateTo, text: translateText });
+      if (result.success && result.data?.code === 200) {
         // 修复数据字段映射：API返回的是 {source: {text: "原文"}, target: {text: "译文"}}，需要转换为前端期望的格式
         setTranslateResult({
-          text: result.data.target.text,
-          source: result.data.source.text,
-          sourceType: result.data.source.type_desc,
-          targetType: result.data.target.type_desc
+          text: result.data.data.target.text,
+          source: result.data.data.source.text,
+          sourceType: result.data.data.source.type_desc,
+          targetType: result.data.data.target.type_desc
         });
         toast.success('翻译完成');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('翻译失败');
@@ -260,12 +280,15 @@ const InfoDashboard = () => {
   const fetchLuck = async () => {
     setLoading(prev => ({ ...prev, luck: true }));
     try {
-      const url = await getApiUrl('LUCK');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setLuckData(result.data);
+      const result = await api.getLuck();
+      if (result.success && result.data?.code === 200) {
+        setLuckData(result.data.data);
         toast.success('运势查询已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取运势信息失败');
@@ -277,16 +300,19 @@ const InfoDashboard = () => {
   const fetchSickText = async () => {
     setLoading(prev => ({ ...prev, sickText: true }));
     try {
-      const url = await getApiUrl('SICK_TEXT');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
+      const result = await api.getSickText();
+      if (result.success && result.data?.code === 200) {
         // 修复数据字段映射：API返回的是 {saying: "内容"}，需要转换为前端期望的 {fabing: "内容"}
         const transformedData = {
-          fabing: result.data.saying
+          fabing: result.data.data.saying
         };
         setSickText(transformedData);
         toast.success('发病文学已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取发病文学失败');
@@ -298,12 +324,15 @@ const InfoDashboard = () => {
   const fetchSong = async () => {
     setLoading(prev => ({ ...prev, song: true }));
     try {
-      const url = await getApiUrl('RANDOM_MUSIC');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setSongData(result.data);
+      const result = await api.getRandomMusic();
+      if (result.success && result.data?.code === 200) {
+        setSongData(result.data.data);
         toast.success('随机歌曲已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取随机歌曲失败');
@@ -315,13 +344,16 @@ const InfoDashboard = () => {
   const fetchHistory = async () => {
     setLoading(prev => ({ ...prev, history: true }));
     try {
-      const url = await getApiUrl('HISTORY');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
+      const result = await api.getTodayInHistory({ encoding: 'json' });
+      if (result.success && result.data?.code === 200) {
         // 修复数据字段映射：API返回的是 {items: [...]}，需要提取items数组
-        setHistoryData(result.data.items || []);
+        setHistoryData(result.data.data.items || []);
         toast.success('历史上的今天已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取历史上的今天失败');
@@ -333,12 +365,15 @@ const InfoDashboard = () => {
   const fetchBilibiliHot = async () => {
     setLoading(prev => ({ ...prev, bilibiliHot: true }));
     try {
-      const url = await getApiUrl('BILIBILI_HOT');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setBilibiliHotData(result.data);
+      const result = await api.getBilibiliHot();
+      if (result.success && result.data?.code === 200) {
+        setBilibiliHotData(result.data.data);
         toast.success('哔哩哔哩热搜已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取哔哩哔哩热搜失败');
@@ -350,12 +385,15 @@ const InfoDashboard = () => {
   const fetchEpicGames = async () => {
     setLoading(prev => ({ ...prev, epicGames: true }));
     try {
-      const url = await getApiUrl('EPIC_GAMES');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setEpicGamesData(result.data);
+      const result = await api.getEpicGames();
+      if (result.success && result.data?.code === 200) {
+        setEpicGamesData(result.data.data);
         toast.success('Epic免费游戏已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取Epic免费游戏失败');
@@ -367,12 +405,15 @@ const InfoDashboard = () => {
   const fetchRandomJoke = async () => {
     setLoading(prev => ({ ...prev, randomJoke: true }));
     try {
-      const url = await getApiUrl('RANDOM_JOKE');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setRandomJoke(result.data);
+      const result = await api.getRandomJoke();
+      if (result.success && result.data?.code === 200) {
+        setRandomJoke(result.data.data);
         toast.success('随机段子已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取随机段子失败');
@@ -386,14 +427,17 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, hash: true }));
     try {
-      const url = await getApiUrl('HASH', { content: hashText });
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
+      const result = await api.getHash({ content: hashText });
+      if (result.success && result.data?.code === 200) {
         // 修复数据字段映射：过滤掉source字段，只保留哈希算法结果
-        const { source, ...hashResults } = result.data;
+        const { source, ...hashResults } = result.data.data;
         setHashResult(hashResults);
         toast.success('哈希计算完成');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('哈希计算失败');
@@ -407,18 +451,21 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, exchangeRate: true }));
     try {
-      const url = await getApiUrl('EXCHANGE_RATE', { from: fromCurrency, to: toCurrency, amount: exchangeAmount });
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
+      const result = await api.getExchangeRate({ from: fromCurrency, to: toCurrency, amount: exchangeAmount });
+      if (result.success && result.data?.code === 200) {
         // 修复数据字段映射：API返回 {base_code, updated, rates}，需要转换为前端期望的格式
-        const rate = result.data.rates[toCurrency];
+        const rate = result.data.data.rates[toCurrency];
         setExchangeRateData({
           result: (parseFloat(exchangeAmount) * rate).toFixed(2),
           rate: rate,
-          updated: result.data.updated
+          updated: result.data.data.updated
         });
         toast.success('汇率转换完成');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('汇率转换失败');
@@ -432,12 +479,15 @@ const InfoDashboard = () => {
     
     setLoading(prev => ({ ...prev, ogInfo: true }));
     try {
-      const apiUrl = await getApiUrl('OG_INFO', { url: ogUrl });
-      const response = await fetch(apiUrl);
-      const result = await response.json();
-      if (result.code === 200) {
-        setOgInfoData(result.data);
+      const result = await api.getOgInfo({ url: ogUrl });
+      if (result.success && result.data?.code === 200) {
+        setOgInfoData(result.data.data);
         toast.success('OG信息获取完成');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取OG信息失败');
@@ -450,12 +500,15 @@ const InfoDashboard = () => {
   const fetchWeiboHot = async () => {
     setLoading(prev => ({ ...prev, weiboHot: true }));
     try {
-      const url = await getApiUrl('WEIBO_HOT');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setWeiboHotData(result.data);
+      const result = await api.getWeiboHot();
+      if (result.success && result.data?.code === 200) {
+        setWeiboHotData(result.data.data);
         toast.success('微博热搜榜已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取微博热搜榜失败');
@@ -468,12 +521,17 @@ const InfoDashboard = () => {
   const fetchZhihuHot = async () => {
     setLoading(prev => ({ ...prev, zhihuHot: true }));
     try {
-      const url = await getApiUrl('ZHIHU_HOT');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setZhihuHotData(result.data);
+      const result = await api.getZhihuHot({ encoding: 'json' });
+      if (result.success && result.data?.code === 200) {
+        // 格式化知乎链接：将api.zhihu.com转换为zhihu.com
+        const formattedData = formatZhihuLinksInData(result.data.data);
+        setZhihuHotData(formattedData);
         toast.success('知乎热门话题已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取知乎热门话题失败');
@@ -486,12 +544,15 @@ const InfoDashboard = () => {
   const fetchDouyinHot = async () => {
     setLoading(prev => ({ ...prev, douyinHot: true }));
     try {
-      const url = await getApiUrl('DOUYIN_HOT');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setDouyinHotData(result.data);
+      const result = await api.getDouyinHot();
+      if (result.success && result.data?.code === 200) {
+        setDouyinHotData(result.data.data);
         toast.success('抖音热搜榜已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取抖音热搜榜失败');
@@ -504,12 +565,15 @@ const InfoDashboard = () => {
   const fetchToutiaoHot = async () => {
     setLoading(prev => ({ ...prev, toutiaoHot: true }));
     try {
-      const url = await getApiUrl('TOUTIAO_HOT');
-      const response = await fetch(url);
-      const result = await response.json();
-      if (result.code === 200) {
-        setToutiaoHotData(result.data);
+      const result = await api.getToutiaoHot();
+      if (result.success && result.data?.code === 200) {
+        setToutiaoHotData(result.data.data);
         toast.success('头条热搜榜已更新');
+        if (result.usedDomain && result.usedDomain !== 'https://top.ilib.vip') {
+          toast.info(`已切换到备用域名: ${result.usedDomain}`);
+        }
+      } else {
+        throw new Error(result.error || '获取数据失败');
       }
     } catch (error) {
       toast.error('获取头条热搜榜失败');
@@ -1414,16 +1478,33 @@ const InfoDashboard = () => {
                       <p className="text-sm text-gray-600 dark:text-gray-400">{songData.song?.singer}</p>
                     </div>
                     {songData.audio?.url && (
-                      <audio controls className="w-full">
-                        <source src={songData.audio.url} type="audio/mpeg" />
-                        您的浏览器不支持音频播放。
-                      </audio>
+                      <div className="space-y-2">
+                        <audio 
+                          controls 
+                          className="w-full"
+                          onError={(e) => {
+                            console.warn('音频加载失败:', songData.audio.url);
+                            toast.error('音频资源暂时无法播放，请稍后重试');
+                          }}
+                        >
+                          <source src={songData.audio.url} type="audio/mpeg" />
+                          <source src={songData.audio.url} type="audio/wav" />
+                          您的浏览器不支持音频播放。
+                        </audio>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          音频来源: {new URL(songData.audio.url).hostname}
+                        </p>
+                      </div>
                     )}
                     {songData.user?.avatar_url && (
                       <img 
                         src={songData.user.avatar_url} 
                         alt="用户头像"
                         className="w-full h-32 object-cover rounded-lg"
+                        onError={(e) => {
+                          console.warn('用户头像加载失败:', songData.user.avatar_url);
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                     )}
                   </div>

@@ -16,20 +16,36 @@
 
 ## 功能特性
 
+### 📊 信息聚合功能
 - 📰 60秒读懂世界 - 每日新闻摘要
 - 🌅 每日壁纸 - 精美壁纸展示
-- 🔥 热搜榜单 - 实时热门话题
+- 🔥 热搜榜单 - 实时热门话题（微博、知乎、抖音、今日头条、哔哩哔哩）
+- 📅 历史上的今天 - 历史事件回顾
+- 🎮 Epic免费游戏 - 每周免费游戏推荐
+- 🎵 随机音乐 - 网易云音乐推荐
+
+### 🛠️ 实用工具
 - 🌐 在线翻译 - 多语言翻译服务
-- 📝 一言语录 - 随机名言警句
-- 🎭 随机段子 - 轻松娱乐内容
-- 🔮 运势查询 - 每日运势预测
 - 💱 汇率换算 - 实时汇率查询
 - 🔐 哈希计算 - 文本哈希工具
-- 🌙 深色模式 - 护眼主题切换
-- ⚡️ 热模块替换 (HMR)
-- 📦 资源打包和优化
-- 🔒 TypeScript 支持
-- 🎨 TailwindCSS 样式
+- 🌍 IP信息查询 - 获取IP地址详细信息
+- 🔗 网页信息提取 - OG标签信息获取
+
+### 🎭 娱乐内容
+- 📝 一言语录 - 随机名言警句
+- 🎭 随机段子 - 轻松娱乐内容
+- 😷 发病文学 - 随机文本生成
+- 🔮 运势查询 - 每日运势预测
+
+### 🚀 技术特性
+- 🔄 **智能故障转移** - 多域名自动切换，确保服务稳定性
+- ⚡️ **实时错误处理** - 友好的错误提示和自动重试机制
+- 🌙 **深色模式** - 护眼主题切换
+- 📱 **响应式设计** - 完美适配各种设备
+- ⚡️ **热模块替换 (HMR)** - 开发时快速更新
+- 📦 **资源打包和优化** - 高性能构建
+- 🔒 **TypeScript 支持** - 类型安全
+- 🎨 **TailwindCSS 样式** - 现代化UI设计
 
 ## Getting Started
 
@@ -51,21 +67,39 @@ npm run dev
 
 应用将在 `http://localhost:5173` 运行。
 
-### API 配置
+### 🔧 API 配置与故障转移
 
-所有外部 API 地址都在 `app/config/api.ts` 文件中集中管理：
+本项目采用**智能故障转移机制**，确保服务的高可用性：
 
+#### 多域名支持
 ```typescript
-export const API_CONFIG = {
-  NEWS: 'https://60s-cf.viki.moe/v2/60s',
-  BING_WALLPAPER: 'https://60s-cf.viki.moe/v2/bing',
-  TRANSLATE: 'https://60s-cf.viki.moe/v2/fanyi',
-  HITOKOTO: 'https://60s-cf.viki.moe/v2/hitokoto',
-  // ... 其他 API 配置
-};
+// app/config/api.ts
+export const API_DOMAINS = [
+  'https://top.ilib.vip',           // 当前默认域名
+  'https://60s.viki.moe',           // 主域名 (Deno Deploy)
+  'https://60s.b23.run',            // 备用域名 1
+  'https://60s-cf.viki.moe',        // 备用域名 2 (CF Workers)
+  'https://60s.114128.xyz',         // 备用域名 3
+  'https://60s-cf.114128.xyz'       // 备用域名 4
+]
 ```
 
-如需修改 API 地址，只需编辑此配置文件即可。
+#### 故障转移特性
+- 🔄 **自动域名切换**: 当主域名不可用时，自动切换到备用域名
+- ⏱️ **智能重试**: 每个域名支持最多3次重试，总超时时间5秒
+- 📊 **失败记录**: 自动记录失败的域名，5分钟后重新尝试
+- 🚨 **用户提示**: 切换到备用域名时会显示友好提示
+- 🔍 **健康检查**: 支持手动检查所有域名的健康状态
+
+#### 配置说明
+```typescript
+export const FAILOVER_CONFIG = {
+  timeout: 5000,        // 请求超时时间(ms)
+  retryDelay: 1000,     // 重试延迟(ms)
+  maxRetries: 3,        // 每个域名最大重试次数
+  enableFailover: true  // 是否启用故障转移
+}
+```
 
 ## 生产构建
 
@@ -85,7 +119,7 @@ npm run build
 
 1. **下载配置文件**：
    ```bash
-   wget https://raw.githubusercontent.com/cklx0719/info-dashboard/main/docker-compose.yml
+   wget https://raw.githubusercontent.com/cklx0719/info-dashboard/master/docker-compose.yml
    ```
 
 2. **启动服务**：
@@ -106,7 +140,7 @@ docker pull cklx0719/info-dashboard:latest
 docker run -d \
   --name info-dashboard \
   -p 3000:80 \
-  -v $(pwd)/app/config/api.ts:/app/config/api.ts:ro \
+  -v ./config.json:/usr/share/nginx/html/config.json:ro \
   --restart unless-stopped \
   cklx0719/info-dashboard:latest
 ```
@@ -114,7 +148,7 @@ docker run -d \
 #### Docker 配置说明
 
 - **端口映射**: 容器内部使用80端口，可映射到主机任意端口
-- **配置文件映射**: 可挂载 `api.ts` 配置文件自定义API地址
+- **配置文件映射**: 可挂载 `config.json` 配置文件自定义API地址
 - **日志目录**: 可挂载 `/var/log/nginx` 查看访问日志
 - **多架构支持**: 支持 `amd64` 和 `arm64` 架构
 
@@ -166,15 +200,26 @@ docker run -d \
 - **状态管理**: React Hooks
 - **图标**: Lucide React
 
-## 项目结构
+## 📁 项目结构
 
 ```
 app/
-├── components/     # 可复用组件
-├── config/        # 配置文件
-│   └── api.ts     # API 地址配置
-├── pages/         # 页面组件
-└── utils/         # 工具函数
+├── components/           # React 组件
+│   ├── InfoDashboard.tsx # 主仪表板组件
+│   ├── ThemeSelector.tsx # 主题切换组件
+│   └── ui/              # UI 基础组件
+├── config/              # 配置文件
+│   ├── api.ts           # API 域名和端点配置
+│   └── runtime-config.ts # 运行时配置管理
+├── contexts/            # React Context
+│   └── ThemeContext.tsx # 主题上下文
+├── routes/              # 路由页面
+│   └── home.tsx         # 首页组件
+├── utils/               # 工具函数
+│   ├── api-failover.ts  # API 故障转移逻辑
+│   └── link-formatter.ts # 链接格式化工具
+├── test/                # 测试文件
+└── welcome/             # 欢迎页面资源
 ```
 
 ## 📡 接口来源
