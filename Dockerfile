@@ -66,7 +66,7 @@ EOF
 COPY --from=builder /app/build/client /usr/share/nginx/html
 
 # 复制配置文件到静态目录（可被挂载覆盖）
-COPY --from=builder /app/config.json /usr/share/nginx/html/config.json
+COPY --from=builder /app/public/config.json /usr/share/nginx/html/config.json
 
 # 创建配置文件目录并设置权限
 RUN mkdir -p /app/config && \
@@ -74,7 +74,7 @@ RUN mkdir -p /app/config && \
     chown -R nginx:nginx /usr/share/nginx/html
 
 # 复制配置文件到可挂载目录（用于docker-compose挂载）
-COPY --from=builder /app/config.json /app/config/config.json
+COPY --from=builder /app/public/config.json /app/config/config.json
 
 # 复制启动脚本
 COPY docker-entrypoint.sh /docker-entrypoint.sh
