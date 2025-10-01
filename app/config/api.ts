@@ -1,157 +1,206 @@
-// v2配置文件 - 集中管理所有外部v2地址
+// API配置文件 - 集中管理所有外部API地址
 // 接口来源说明：
 // - 本项目使用的API接口来源于 https://github.com/vikiboss/60s 项目
 // - 感谢原作者 Viki 提供的高质量、开源、可靠的API服务
 // - 60秒读懂世界：来源于知乎日报等新闻聚合
-// - 必应壁纸：Microsoft Bing官方壁纸v2
-// - 一言语录：Hitokoto官方v2 (https://hitokoto.cn/)
-// - 翻译v2：百度翻译v2
-// - 热搜数据：各平台官方v2聚合
-// - 其他功能：各种开源v2整合
+// - 必应壁纸：Microsoft Bing官方壁纸API
+// - 一言语录：Hitokoto官方API (https://hitokoto.cn/)
+// - 翻译API：百度翻译API
+// - 热搜数据：各平台官方API聚合
+// - 其他功能：各种开源API整合
 
-// API域名配置 - 支持故障转移
-export const API_DOMAINS = [
-  'https://top.ilib.vip',           // 当前默认域名
-  'https://60s.viki.moe',           // 主域名 (Deno Deploy)
-  'https://60s.b23.run',            // 备用域名 1 (Deno Deploy)
-  'https://60s-cf.viki.moe',        // 备用域名 2 (CF Workers)
-  'https://60s.114128.xyz',         // 备用域名 3 (Deno Deploy)
-  'https://60s-cf.114128.xyz'       // 备用域名 4 (CF Workers)
-]
-
-// API接口路径配置
-export const API_ENDPOINTS = {
-  SIXTY_SECONDS: '/v2/60s',
-  BING: '/v2/bing',
-  HISTORY: '/v2/today_in_history',
-  BILI: '/v2/bili',
-  WEIBO: '/v2/weibo',
-  ZHIHU: '/v2/zhihu',
-  DOUYIN: '/v2/douyin',
-  TOUTIAO: '/v2/toutiao',
-  EPIC: '/v2/epic',
-  WEATHER: '/v2/weather',
-  BAIKE: '/v2/baike',
-  FANYI: '/v2/fanyi',
-  QRCODE: '/v2/qrcode',
-  IP: '/v2/ip',
-  LUNAR: '/v2/lunar',
-  HASH: '/v2/hash',
-  PASSWORD: '/v2/password',
-  COLOR: '/v2/color',
-  KFC: '/v2/kfc',
-  HITOKOTO: '/v2/hitokoto',
-  DUANZI: '/v2/duanzi',
-  ANSWER: '/v2/answer',
-  LUCK: '/v2/luck',
-  CHEMICAL: '/v2/chemical',
-  CHANGYA: '/v2/changya',
-  FABING: '/v2/fabing',
-  DAD_JOKE: '/v2/dad-joke',
-  AWESOME_JS: '/v2/awesome-js',
-  HEALTH: '/v2/health',
-  EXCHANGE_RATE: '/v2/exchange_rate',
-  AI_NEWS: '/v2/ai-news',
-  HACKER_NEWS: '/v2/hacker-news',
-  MAOYAN: '/v2/maoyan',
-  NCM_RANK: '/v2/ncm-rank',
-  REDNOTE: '/v2/rednote',
-  BAIDU_REALTIME: '/v2/baidu/realtime',
-  BAIDU_TELEPLAY: '/v2/baidu/teleplay',
-  BAIDU_TIEBA: '/v2/baidu/tieba',
-  DONGCHEDI: '/v2/dongchedi',
-  WEATHER_FORECAST: '/v2/weather/forecast',
-  FANYI_LANGS: '/v2/fanyi/langs',
-  PASSWORD_CHECK: '/v2/password/check',
-  COLOR_PALETTE: '/v2/color/palette',
-  OG: '/v2/og'
+// 配置类型定义
+interface ApiConfig {
+  API_DOMAINS: {
+    primary: string;
+    fallback: string[];
+    description: {
+      primary: string;
+      fallback: string[];
+    };
+  };
+  FAILOVER_CONFIG: {
+    timeout: number;
+    retryDelay: number;
+    maxRetries: number;
+    enableFailover: boolean;
+    description: {
+      timeout: string;
+      retryDelay: string;
+      maxRetries: string;
+      enableFailover: string;
+    };
+  };
+  API_ENDPOINTS: Record<string, string>;
+  API_OPTIONS: {
+    method: string;
+    headers: Record<string, string>;
+  };
 }
 
-// 兼容性：保持原有的v2_CONFIG结构
-export const v2_CONFIG = {
-  // 基础URL - 使用官方v2聚合服务
-  BASE_URL: API_DOMAINS[0],
-  
-  // 60秒读懂世界 - 知乎日报v2
-  NEWS: API_DOMAINS[0] + API_ENDPOINTS.SIXTY_SECONDS,
-  
-  // 必应壁纸 - Microsoft Bing官方v2
-  BING_WALLPAPER: API_DOMAINS[0] + API_ENDPOINTS.BING,
-  
-  // 一言语录 - Hitokoto官方v2
-  HITOKOTO: API_DOMAINS[0] + API_ENDPOINTS.HITOKOTO,
-  
-  // IP信息 - IP查询v2
-  IP_INFO: API_DOMAINS[0] + API_ENDPOINTS.IP,
-  
-  // 语言列表 - 百度翻译支持语言
-  LANGUAGES: API_DOMAINS[0] + API_ENDPOINTS.FANYI_LANGS,
-  
-  // 翻译v2 - 百度翻译v2
-  TRANSLATE: API_DOMAINS[0] + API_ENDPOINTS.FANYI,
-  
-  // 运势查询 - 星座运势v2
-  LUCK: API_DOMAINS[0] + API_ENDPOINTS.LUCK,
-  
-  // 发病文学 - 随机文本生成
-  SICK_TEXT: API_DOMAINS[0] + API_ENDPOINTS.FABING,
-  
-  // 随机歌曲 - 网易云音乐v2
-  RANDOM_MUSIC: API_DOMAINS[0] + API_ENDPOINTS.CHANGYA,
-  
-  // 历史上的今天 - 历史事件v2
-  HISTORY: API_DOMAINS[0] + API_ENDPOINTS.HISTORY,
-  
-  // 哔哩哔哩热搜 - B站官方v2
-  BILIBILI_HOT: API_DOMAINS[0] + API_ENDPOINTS.BILI,
-  
-  // Epic免费游戏 - Epic Games官方v2
-  EPIC_GAMES: API_DOMAINS[0] + API_ENDPOINTS.EPIC,
-  
-  // 随机段子 - 笑话v2
-  RANDOM_JOKE: API_DOMAINS[0] + API_ENDPOINTS.DUANZI,
-  
-  // 微博热搜 - 微博官方v2
-  WEIBO_HOT: API_DOMAINS[0] + API_ENDPOINTS.WEIBO,
-  
-  // 知乎热门 - 知乎官方v2
-  ZHIHU_HOT: API_DOMAINS[0] + API_ENDPOINTS.ZHIHU,
-  
-  // 抖音热搜 - 抖音官方v2
-  DOUYIN_HOT: API_DOMAINS[0] + API_ENDPOINTS.DOUYIN,
-  
-  // 头条热搜 - 今日头条官方v2
-  TOUTIAO_HOT: API_DOMAINS[0] + API_ENDPOINTS.TOUTIAO,
-  
-  // 哈希计算 - 本地计算服务
-  HASH: API_DOMAINS[0] + API_ENDPOINTS.HASH,
-  
-  // 汇率转换 - 实时汇率v2
-  EXCHANGE_RATE: API_DOMAINS[0] + API_ENDPOINTS.EXCHANGE_RATE,
-  
-  // OG信息 - 网页元信息解析
-  OG_INFO: API_DOMAINS[0] + API_ENDPOINTS.OG
-};
+// 配置加载函数
+let cachedConfig: ApiConfig | null = null;
 
-// API故障转移配置
-export const FAILOVER_CONFIG = {
-  timeout: 5000,        // 请求超时时间(ms)
-  retryDelay: 1000,     // 重试延迟(ms)
-  maxRetries: 3,        // 每个域名最大重试次数
-  enableFailover: true  // 是否启用故障转移
-}
+export const loadConfig = async (): Promise<ApiConfig> => {
+  if (cachedConfig) {
+    return cachedConfig;
+  }
 
-// API请求的通用配置
-export const API_OPTIONS = {
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/json'
+  try {
+    let configData: ApiConfig;
+    
+    if (typeof window !== 'undefined') {
+      // 浏览器环境
+      const response = await fetch('/config.json');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch config.json: ${response.status}`);
+      }
+      configData = await response.json();
+    } else {
+      // Node.js环境
+      const fs = await import('fs');
+      const path = await import('path');
+      const configPath = path.resolve(process.cwd(), 'config.json');
+      const configText = fs.readFileSync(configPath, 'utf-8');
+      configData = JSON.parse(configText);
+    }
+    
+    cachedConfig = configData;
+    return configData;
+  } catch (error) {
+    console.error('Failed to load config.json:', error);
+    throw new Error('Configuration file is required but could not be loaded');
   }
 };
 
-// 获取完整的API URL
-export const getApiUrl = (endpoint: keyof typeof v2_CONFIG, params?: Record<string, string>) => {
-  let url = v2_CONFIG[endpoint];
+// 同步获取配置（必须先调用loadConfig）
+export const getConfig = (): ApiConfig => {
+  if (!cachedConfig) {
+    throw new Error('Configuration not loaded. Please call loadConfig() first.');
+  }
+  return cachedConfig;
+};
+
+// 配置初始化状态
+let configInitialized = false;
+let configPromise: Promise<ApiConfig> | null = null;
+
+// 初始化配置
+export const initConfig = async (): Promise<ApiConfig> => {
+  if (!configPromise) {
+    configPromise = loadConfig();
+  }
+  const config = await configPromise;
+  configInitialized = true;
+  return config;
+};
+
+// 获取配置（确保已初始化）
+const getInitializedConfig = async (): Promise<ApiConfig> => {
+  if (!configInitialized) {
+    return await initConfig();
+  }
+  return getConfig();
+};
+
+// 导出配置获取函数
+export const getApiDomains = async (): Promise<string[]> => {
+  const config = await getInitializedConfig();
+  return [config.API_DOMAINS.primary, ...config.API_DOMAINS.fallback];
+};
+
+export const getApiEndpoints = async (): Promise<Record<string, string>> => {
+  const config = await getInitializedConfig();
+  return config.API_ENDPOINTS;
+};
+
+export const getFailoverConfig = async () => {
+  const config = await getInitializedConfig();
+  return config.FAILOVER_CONFIG;
+};
+
+export const getApiOptions = async () => {
+  const config = await getInitializedConfig();
+  return config.API_OPTIONS;
+};
+
+// 兼容性：保持原有的v2_CONFIG结构（异步版本）
+export const getV2Config = async () => {
+  const config = await getInitializedConfig();
+  const domains = [config.API_DOMAINS.primary, ...config.API_DOMAINS.fallback];
+  const endpoints = config.API_ENDPOINTS;
+  const baseUrl = domains[0];
+  
+  return {
+    // 基础URL - 使用官方API聚合服务
+    BASE_URL: baseUrl,
+    
+    // 60秒读懂世界 - 知乎日报API
+    NEWS: baseUrl + endpoints.NEWS,
+    
+    // 必应壁纸 - Microsoft Bing官方API
+    BING_WALLPAPER: baseUrl + endpoints.BING_WALLPAPER,
+    
+    // 一言语录 - Hitokoto官方API
+    HITOKOTO: baseUrl + endpoints.HITOKOTO,
+    
+    // IP信息 - IP查询API
+    IP_INFO: baseUrl + endpoints.IP_INFO,
+    
+    // 语言列表 - 百度翻译支持语言
+    LANGUAGES: baseUrl + endpoints.LANGUAGES,
+    
+    // 翻译API - 百度翻译API
+    TRANSLATE: baseUrl + endpoints.TRANSLATE,
+    
+    // 运势查询 - 星座运势API
+    LUCK: baseUrl + endpoints.LUCK,
+    
+    // 发病文学 - 随机文本生成
+    SICK_TEXT: baseUrl + endpoints.SICK_TEXT,
+    
+    // 随机歌曲 - 网易云音乐API
+    RANDOM_MUSIC: baseUrl + endpoints.RANDOM_MUSIC,
+    
+    // 历史上的今天 - 历史事件API
+    HISTORY: baseUrl + endpoints.HISTORY,
+    
+    // 哔哩哔哩热搜 - B站官方API
+    BILIBILI_HOT: baseUrl + endpoints.BILIBILI_HOT,
+    
+    // Epic免费游戏 - Epic Games官方API
+    EPIC_GAMES: baseUrl + endpoints.EPIC_GAMES,
+    
+    // 随机段子 - 笑话API
+    RANDOM_JOKE: baseUrl + endpoints.RANDOM_JOKE,
+    
+    // 微博热搜 - 微博官方API
+    WEIBO_HOT: baseUrl + endpoints.WEIBO_HOT,
+    
+    // 知乎热门 - 知乎官方API
+    ZHIHU_HOT: baseUrl + endpoints.ZHIHU_HOT,
+    
+    // 抖音热搜 - 抖音官方API
+    DOUYIN_HOT: baseUrl + endpoints.DOUYIN_HOT,
+    
+    // 头条热搜 - 今日头条官方API
+    TOUTIAO_HOT: baseUrl + endpoints.TOUTIAO_HOT,
+    
+    // 哈希计算 - 本地计算服务
+    HASH: baseUrl + endpoints.HASH,
+    
+    // 汇率转换 - 实时汇率API
+    EXCHANGE_RATE: baseUrl + endpoints.EXCHANGE_RATE,
+    
+    // OG信息 - 网页元信息解析
+    OG_INFO: baseUrl + endpoints.OG_INFO
+  };
+};
+
+// 获取完整的API URL（异步版本）
+export const getApiUrl = async (endpoint: string, params?: Record<string, string>) => {
+  const v2Config = await getV2Config();
+  let url = v2Config[endpoint as keyof typeof v2Config];
   
   if (params) {
     const searchParams = new URLSearchParams(params);
@@ -161,10 +210,45 @@ export const getApiUrl = (endpoint: keyof typeof v2_CONFIG, params?: Record<stri
   return url;
 };
 
-// 故障转移API请求函数
-export const getApiUrlWithFailover = (endpointPath: keyof typeof API_ENDPOINTS, params?: Record<string, string>) => {
-  const path = API_ENDPOINTS[endpointPath];
+// 故障转移API请求函数（异步版本）
+export const getApiUrlWithFailover = async (endpointKey: string, params?: Record<string, string>) => {
+  const endpoints = await getApiEndpoints();
+  const domains = await getApiDomains();
+  const path = endpoints[endpointKey];
   const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
   
-  return API_DOMAINS.map(domain => `${domain}${path}${queryString}`);
+  return domains.map(domain => `${domain}${path}${queryString}`);
+};
+
+// 动态配置更新函数
+export const updateDomains = async () => {
+  try {
+    // 重置配置状态，强制重新加载
+    configInitialized = false;
+    configPromise = null;
+    cachedConfig = null;
+    
+    await initConfig();
+    console.log('Configuration updated successfully');
+  } catch (error) {
+    console.error('Failed to update configuration:', error);
+  }
+};
+
+// 获取当前主域名（异步版本）
+export const getPrimaryDomain = async (): Promise<string> => {
+  const domains = await getApiDomains();
+  return domains[0];
+};
+
+// 获取所有备用域名（异步版本）
+export const getFallbackDomains = async (): Promise<string[]> => {
+  const domains = await getApiDomains();
+  return domains.slice(1);
+};
+
+// 检查故障转移是否启用（异步版本）
+export const isFailoverEnabled = async (): Promise<boolean> => {
+  const failoverConfig = await getFailoverConfig();
+  return failoverConfig.enableFailover;
 };

@@ -1,4 +1,4 @@
-import { API_DOMAINS, API_ENDPOINTS, FAILOVER_CONFIG } from '../config/api'
+import { getApiDomains, getApiEndpoints, getFailoverConfig } from '../config/api'
 
 // API请求错误类型
 export interface ApiError {
@@ -29,25 +29,28 @@ export class ApiFailover {
    * @param options 请求选项
    */
   static async request<T = any>(
-    endpoint: keyof typeof API_ENDPOINTS,
+    endpoint: string,
     params?: Record<string, string>,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
-    if (!FAILOVER_CONFIG.enableFailover) {
+    const failoverConfig = await getFailoverConfig();
+    const apiDomains = await getApiDomains();
+    
+    if (!failoverConfig.enableFailover) {
       // 如果未启用故障转移，使用第一个域名
-      return this.singleRequest<T>(API_DOMAINS[0], endpoint, params, options)
+      return this.singleRequest<T>(apiDomains[0], endpoint, params, options)
     }
 
     // 重置过期的失败记录
     this.resetExpiredFailures()
 
     const failedDomains: ApiError[] = []
-    const availableDomains = API_DOMAINS.filter(domain => !this.failedDomains.has(domain))
+    const availableDomains = apiDomains.filter(domain => !this.failedDomains.has(domain))
     
     // 如果所有域名都失败了，重置失败记录并重试
     if (availableDomains.length === 0) {
       this.failedDomains.clear()
-      availableDomains.push(...API_DOMAINS)
+      availableDomains.push(...apiDomains)
     }
 
     // 依次尝试可用的域名
@@ -78,7 +81,7 @@ export class ApiFailover {
         
         // 如果不是最后一个域名，等待一段时间再尝试下一个
         if (domain !== availableDomains[availableDomains.length - 1]) {
-          await this.delay(FAILOVER_CONFIG.retryDelay)
+          await this.delay(failoverConfig.retryDelay)
         }
       }
     }
@@ -96,16 +99,19 @@ export class ApiFailover {
    */
   private static async singleRequest<T>(
     domain: string,
-    endpoint: keyof typeof API_ENDPOINTS,
+    endpoint: string,
     params?: Record<string, string>,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
-    const path = API_ENDPOINTS[endpoint]
+    const apiEndpoints = await getApiEndpoints();
+    const failoverConfig = await getFailoverConfig();
+    
+    const path = apiEndpoints[endpoint]
     const queryString = params ? `?${new URLSearchParams(params).toString()}` : ''
     const url = `${domain}${path}${queryString}`
 
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), FAILOVER_CONFIG.timeout)
+    const timeoutId = setTimeout(() => controller.abort(), failoverConfig.timeout)
 
     try {
       const response = await fetch(url, {
@@ -131,6 +137,12 @@ export class ApiFailover {
       }
     } catch (error) {
       clearTimeout(timeoutId)
+      
+      // 改进AbortError的处理
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error(`请求超时: ${domain}`)
+      }
+      
       throw error
     }
   }
@@ -156,9 +168,10 @@ export class ApiFailover {
   /**
    * 获取当前可用的域名列表
    */
-  static getAvailableDomains(): string[] {
+  static async getAvailableDomains(): Promise<string[]> {
     this.resetExpiredFailures()
-    return API_DOMAINS.filter(domain => !this.failedDomains.has(domain))
+    const apiDomains = await getApiDomains();
+    return apiDomains.filter(domain => !this.failedDomains.has(domain))
   }
 
   /**
@@ -181,7 +194,7 @@ export class ApiFailover {
    */
   static async checkDomainHealth(domain: string): Promise<boolean> {
     try {
-      const result = await this.singleRequest(domain, 'SIXTY_SECONDS', { encoding: 'json' })
+      const result = await this.singleRequest(domain, 'NEWS', { encoding: 'json' })
       return result.success
     } catch {
       return false
@@ -193,9 +206,10 @@ export class ApiFailover {
    */
   static async checkAllDomainsHealth(): Promise<Record<string, boolean>> {
     const results: Record<string, boolean> = {}
+    const apiDomains = await getApiDomains();
     
     await Promise.all(
-      API_DOMAINS.map(async (domain) => {
+      apiDomains.map(async (domain) => {
         results[domain] = await this.checkDomainHealth(domain)
       })
     )
@@ -211,7 +225,7 @@ export const apiRequest = ApiFailover.request.bind(ApiFailover)
 export const api = {
   // 60秒读懂世界
   getSixtySeconds: (params?: Record<string, string>) => 
-    apiRequest('SIXTY_SECONDS', params),
+    apiRequest('NEWS', params),
   
   // 历史上的今天
   getTodayInHistory: (params?: Record<string, string>) => 
@@ -219,77 +233,102 @@ export const api = {
   
   // 知乎热榜
   getZhihuHot: (params?: Record<string, string>) => 
-    apiRequest('ZHIHU', params),
+    apiRequest('ZHIHU_HOT', params),
   
-  // IP查询
+  // IP信息
   getIpInfo: (ip?: string) => 
-    apiRequest('IP', ip ? { ip } : undefined),
+    apiRequest('IP_INFO', ip ? { ip } : undefined),
   
   // 必应壁纸
   getBingWallpaper: (params?: Record<string, string>) => 
-    apiRequest('BING', params),
+    apiRequest('BING_WALLPAPER', params),
   
-  // 一言
+  // 一言语录
   getHitokoto: (params?: Record<string, string>) => 
     apiRequest('HITOKOTO', params),
   
-  // 获取翻译支持的语言列表
+  // 翻译语言列表
   getLanguages: (params?: Record<string, string>) => 
-    apiRequest('FANYI_LANGS', params),
+    apiRequest('LANGUAGES', params),
   
-  // 翻译文本
+  // 翻译
   getTranslate: (params?: Record<string, string>) => 
-    apiRequest('FANYI', params),
+    apiRequest('TRANSLATE', params),
   
-  // 今日运势
+  // 运势
   getLuck: (params?: Record<string, string>) => 
     apiRequest('LUCK', params),
   
   // 发病文案
   getSickText: (params?: Record<string, string>) => 
-    apiRequest('FABING', params),
+    apiRequest('SICK_TEXT', params),
   
   // 随机音乐
   getRandomMusic: (params?: Record<string, string>) => 
-    apiRequest('CHANGYA', params),
+    apiRequest('RANDOM_MUSIC', params),
   
-
-  
-  // Epic免费游戏（新增方法）
+  // Epic免费游戏
   getEpicGames: (params?: Record<string, string>) => 
-    apiRequest('EPIC', params),
+    apiRequest('EPIC_GAMES', params),
   
-  // 随机段子（新增方法）
+  // 随机段子
   getRandomJoke: (params?: Record<string, string>) => 
-    apiRequest('DUANZI', params),
+    apiRequest('RANDOM_JOKE', params),
   
-  // 哈希计算（新增方法）
+  // 哈希
   getHash: (params?: Record<string, string>) => 
     apiRequest('HASH', params),
   
-  // 汇率查询（新增方法）
+  // 汇率
   getExchangeRate: (params?: Record<string, string>) => 
     apiRequest('EXCHANGE_RATE', params),
   
-  // OG信息获取（新增方法）
+  // OG信息
   getOgInfo: (params?: Record<string, string>) => 
-    apiRequest('OG', params),
+    apiRequest('OG_INFO', params),
   
   // 微博热搜
   getWeiboHot: (params?: Record<string, string>) => 
-    apiRequest('WEIBO', params),
+    apiRequest('WEIBO_HOT', params),
    
   // 抖音热搜
   getDouyinHot: (params?: Record<string, string>) => 
-    apiRequest('DOUYIN', params),
+    apiRequest('DOUYIN_HOT', params),
    
   // 头条热搜
   getToutiaoHot: (params?: Record<string, string>) => 
-    apiRequest('TOUTIAO', params),
+    apiRequest('TOUTIAO_HOT', params),
   
   // 哔哩哔哩热搜
   getBilibiliHot: (params?: Record<string, string>) => 
-    apiRequest('BILI', params),
+    apiRequest('BILIBILI_HOT', params),
+
+  // 小红书热点
+  getRednote: (params?: Record<string, string>) => 
+    apiRequest('REDNOTE', params),
   
+  // 百度实时热搜
+  getBaiduRealtime: (params?: Record<string, string>) => 
+    apiRequest('BAIDU_REALTIME', params),
+  
+  // 百度电视剧
+  getBaiduTeleplay: (params?: Record<string, string>) => 
+    apiRequest('BAIDU_TELEPLAY', params),
+  
+  // 百度贴吧话题榜
+  getBaiduTieba: (params?: Record<string, string>) => 
+    apiRequest('BAIDU_TIEBA', params),
+  
+  // 猫眼相关
+  getMaoyan: (params?: Record<string, string>) => 
+    apiRequest('MAOYAN', params),
+  
+  // 猫眼电视收视排行
+  getMaoyanTv: (params?: Record<string, string>) => 
+    apiRequest('MAOYAN_TV', params),
+  
+  // 猫眼网剧实时热度
+  getMaoyanWeb: (params?: Record<string, string>) => 
+    apiRequest('MAOYAN_WEB', params),
 
 }

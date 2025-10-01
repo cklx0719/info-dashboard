@@ -1,6 +1,6 @@
 # 信息聚合仪表板 (Info Dashboard)
 
-一个现代化的单页面应用（SPA），集成多种实用信息查询功能，包括新闻、翻译、热搜、壁纸等。
+一个现代化的单页面应用（SPA），集成多种实用信息查询功能，包括新闻、翻译、热搜、壁纸、电影等。
 
 [![GitHub Release](https://img.shields.io/github/v/release/cklx0719/info-dashboard)](https://github.com/cklx0719/info-dashboard/releases)
 [![Docker Hub](https://img.shields.io/docker/v/cklx0719/info-dashboard?label=Docker%20Hub)](https://hub.docker.com/r/cklx0719/info-dashboard)
@@ -12,14 +12,15 @@
 
 - **GitHub 仓库**: [https://github.com/cklx0719/info-dashboard](https://github.com/cklx0719/info-dashboard)
 - **Docker Hub**: [https://hub.docker.com/r/cklx0719/info-dashboard](https://hub.docker.com/r/cklx0719/info-dashboard)
-- **最新发布**: [v0.3.0](https://github.com/cklx0719/info-dashboard/releases/tag/v0.3.0)
+- **最新发布**: [v0.4.0](https://github.com/cklx0719/info-dashboard/releases/tag/v0.4.0)
 
 ## 功能特性
 
 ### 📊 信息聚合功能
 - 📰 60秒读懂世界 - 每日新闻摘要
 - 🌅 每日壁纸 - 精美壁纸展示
-- 🔥 热搜榜单 - 实时热门话题（微博、知乎、抖音、今日头条、哔哩哔哩）
+- 🔥 热搜榜单 - 实时热门话题（微博、知乎、抖音、今日头条、小红书、百度、百度贴吧等）
+- 🎬 电影榜单 - 猫眼电影实时票房、全球票房、电视剧榜单等
 - 📅 历史上的今天 - 历史事件回顾
 - 🎮 Epic免费游戏 - 每周免费游戏推荐
 - 🎵 随机音乐 - 网易云音乐推荐
@@ -40,12 +41,14 @@
 ### 🚀 技术特性
 - 🔄 **智能故障转移** - 多域名自动切换，确保服务稳定性
 - ⚡️ **实时错误处理** - 友好的错误提示和自动重试机制
+- 🎭 **电影详情代理** - 内置代理服务器解决CORS问题，支持电影封面背景
 - 🌙 **深色模式** - 护眼主题切换
 - 📱 **响应式设计** - 完美适配各种设备
 - ⚡️ **热模块替换 (HMR)** - 开发时快速更新
 - 📦 **资源打包和优化** - 高性能构建
 - 🔒 **TypeScript 支持** - 类型安全
 - 🎨 **TailwindCSS 样式** - 现代化UI设计
+- 🐳 **Docker 支持** - 一键部署，支持多架构
 
 ## Getting Started
 
@@ -59,13 +62,19 @@ npm install
 
 ### 开发模式
 
-启动开发服务器：
+1. **启动前端开发服务器**：
+   ```bash
+   npm run dev
+   ```
+   应用将在 `http://localhost:5173` 运行。
 
-```bash
-npm run dev
-```
+2. **启动电影详情代理服务器**（可选，用于电影功能）：
+   ```bash
+   node proxy-server.js
+   ```
+   代理服务器将在 `http://localhost:3001` 运行。
 
-应用将在 `http://localhost:5173` 运行。
+> **注意**: 电影详情功能需要代理服务器才能正常工作，如果不启动代理服务器，电影相关功能将无法使用。
 
 ### 🔧 API 配置与故障转移
 
@@ -147,10 +156,13 @@ docker run -d \
 
 #### Docker 配置说明
 
-- **端口映射**: 容器内部使用80端口，可映射到主机任意端口
+- **端口映射**: 
+  - 前端服务: 容器内部使用80端口，可映射到主机任意端口
+  - 代理服务: 容器内部使用3001端口，用于电影详情API代理
 - **配置文件映射**: 可挂载 `config.json` 配置文件自定义API地址
 - **日志目录**: 可挂载 `/var/log/nginx` 查看访问日志
 - **多架构支持**: 支持 `amd64` 和 `arm64` 架构
+- **内置服务**: 包含前端静态文件和电影详情代理服务器
 
 ### 📦 静态文件部署
 
@@ -203,23 +215,33 @@ docker run -d \
 ## 📁 项目结构
 
 ```
-app/
-├── components/           # React 组件
-│   ├── InfoDashboard.tsx # 主仪表板组件
-│   ├── ThemeSelector.tsx # 主题切换组件
-│   └── ui/              # UI 基础组件
-├── config/              # 配置文件
-│   ├── api.ts           # API 域名和端点配置
-│   └── runtime-config.ts # 运行时配置管理
-├── contexts/            # React Context
-│   └── ThemeContext.tsx # 主题上下文
-├── routes/              # 路由页面
-│   └── home.tsx         # 首页组件
-├── utils/               # 工具函数
-│   ├── api-failover.ts  # API 故障转移逻辑
-│   └── link-formatter.ts # 链接格式化工具
-├── test/                # 测试文件
-└── welcome/             # 欢迎页面资源
+├── app/                     # 前端应用源码
+│   ├── components/          # React 组件
+│   │   ├── InfoDashboard.tsx # 主仪表板组件
+│   │   ├── ThemeSelector.tsx # 主题切换组件
+│   │   └── ui/              # UI 基础组件
+│   ├── config/              # 配置文件
+│   │   ├── api.ts           # API 域名和端点配置
+│   │   └── runtime-config.ts # 运行时配置管理
+│   ├── contexts/            # React Context
+│   │   └── ThemeContext.tsx # 主题上下文
+│   ├── routes/              # 路由页面
+│   │   └── home.tsx         # 首页组件
+│   ├── utils/               # 工具函数
+│   │   ├── api-failover.ts  # API 故障转移逻辑
+│   │   ├── link-formatter.ts # 链接格式化工具
+│   │   └── maoyan-proxy.ts  # 猫眼电影代理工具
+│   ├── test/                # 测试文件
+│   └── welcome/             # 欢迎页面资源
+├── api/                     # API 相关文件
+│   └── maoyan-detail.js     # 猫眼电影详情API
+├── public/                  # 静态资源
+│   ├── config.json          # 前端配置文件
+│   └── favicon.ico          # 网站图标
+├── proxy-server.js          # 电影详情代理服务器
+├── docker-compose.yml       # Docker Compose 配置
+├── dockerfile               # Docker 构建文件
+└── package.json             # 项目依赖和脚本
 ```
 
 ## 📡 接口来源

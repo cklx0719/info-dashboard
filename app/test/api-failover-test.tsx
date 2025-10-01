@@ -1,15 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { toast } from 'sonner';
 import { api, ApiFailover } from '../utils/api-failover';
-import { API_DOMAINS } from '../config/api';
+import { getApiDomains } from '../config/api';
 
 const ApiFailoverTest = () => {
   const [testResults, setTestResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [domainStatus, setDomainStatus] = useState<Record<string, 'unknown' | 'success' | 'failed'>>({});
+  const [domains, setDomains] = useState<string[]>([]);
+
+  // 初始化时获取域名列表
+  useEffect(() => {
+    const loadDomains = async () => {
+      try {
+        const domainList = await getApiDomains();
+        setDomains(domainList);
+      } catch (error) {
+        console.error('Failed to load domains:', error);
+        toast.error('加载域名列表失败');
+      }
+    };
+    loadDomains();
+  }, []);
 
   // 测试单个API接口
   const testSingleApi = async (apiName: string, apiFunction: () => Promise<any>) => {
@@ -66,8 +81,9 @@ const ApiFailoverTest = () => {
     toast.info('开始测试域名健康状态...');
     
     const healthResults: Record<string, 'success' | 'failed'> = {};
+    const domains = await getApiDomains();
     
-    for (const domain of API_DOMAINS) {
+    for (const domain of domains) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -117,7 +133,7 @@ const ApiFailoverTest = () => {
           <div>
             <h3 className="text-lg font-semibold mb-2">域名状态</h3>
             <div className="flex flex-wrap gap-2">
-              {API_DOMAINS.map(domain => {
+              {domains.map(domain => {
                 const status = domainStatus[domain] || 'unknown';
                 const variant = status === 'success' ? 'default' : 
                               status === 'failed' ? 'destructive' : 'secondary';

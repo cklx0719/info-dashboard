@@ -1,14 +1,22 @@
 {
   "name": "info-dashboard",
-  "version": "0.3.0",
-  "description": "一个现代化的信息聚合仪表板，集成新闻、热搜、翻译、汇率等多种实用功能",
+  "version": "0.4.0",
+  "description": "一个现代化的信息聚合仪表板，集成新闻、热搜、翻译、汇率、电影等多种实用功能",
   "author": "cklx0719",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/cklx0719/info-dashboard.git"
   },
-  "keywords": ["dashboard", "news", "hot-search", "translation", "exchange-rate", "react", "vite"],
+  "keywords": [
+    "dashboard",
+    "news",
+    "hot-search",
+    "translation",
+    "exchange-rate",
+    "react",
+    "vite"
+  ],
   "homepage": "https://github.com/cklx0719/info-dashboard",
   "private": false,
   "type": "module",
@@ -35,8 +43,11 @@
     "@react-router/serve": "^7.7.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "isbot": "^5.1.27",
     "lucide-react": "^0.539.0",
+    "node-fetch": "^2.6.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router": "^7.7.1",

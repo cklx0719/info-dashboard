@@ -25,7 +25,9 @@ import {
   Star,
   ExternalLink,
   ArrowLeftRight,
-  Copy
+  Copy,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getApiUrl } from '../config/runtime-config';
@@ -51,6 +53,19 @@ const InfoDashboard = () => {
   const [zhihuHotData, setZhihuHotData] = useState<any[]>([]);
   const [douyinHotData, setDouyinHotData] = useState<any[]>([]);
   const [toutiaoHotData, setToutiaoHotData] = useState<any[]>([]);
+  
+  // 新增榜单数据状态
+  const [xiaohongshuHotData, setXiaohongshuHotData] = useState<any[]>([]);
+  const [baiduHotData, setBaiduHotData] = useState<any[]>([]);
+  const [baiduTvData, setBaiduTvData] = useState<any[]>([]);
+  const [baiduTiebaData, setBaiduTiebaData] = useState<any[]>([]);
+  const [maoyanGlobalData, setMaoyanGlobalData] = useState<any[]>([]);
+  const [maoyanRealtimeData, setMaoyanRealtimeData] = useState<any[]>([]);
+  const [maoyanTvData, setMaoyanTvData] = useState<any[]>([]);
+  const [maoyanWebData, setMaoyanWebData] = useState<any[]>([]);
+
+  // 电影详情状态
+  const [movieDetails, setMovieDetails] = useState<{[key: string]: any}>({});
 
   // 翻译相关状态
   const [translateText, setTranslateText] = useState('');
@@ -72,6 +87,23 @@ const InfoDashboard = () => {
   const [ogUrl, setOgUrl] = useState('');
   const [ogInfoData, setOgInfoData] = useState<any>(null);
 
+  // 折叠展开状态
+  const [expandedSections, setExpandedSections] = useState({
+    weibo: false,
+    zhihu: false,
+    douyin: false,
+    toutiao: false,
+    xiaohongshu: false,
+    baidu: false,
+    baiduHot: false,
+    baiduTv: false,
+    baiduTieba: false,
+    maoyanGlobal: false,
+    maoyanRealtime: false,
+    maoyanTv: false,
+    maoyanWeb: false
+  });
+
   // 加载状态
   const [loading, setLoading] = useState({
     news: false,
@@ -91,6 +123,14 @@ const InfoDashboard = () => {
     zhihuHot: false,
     douyinHot: false,
     toutiaoHot: false,
+    xiaohongshuHot: false,
+    baiduHot: false,
+    baiduTv: false,
+    baiduTieba: false,
+    maoyanGlobal: false,
+    maoyanRealtime: false,
+    maoyanTv: false,
+    maoyanWeb: false,
     translate: false,
     hash: false,
     exchangeRate: false,
@@ -167,7 +207,7 @@ const InfoDashboard = () => {
   const fetchIP = async () => {
     setLoading(prev => ({ ...prev, ip: true }));
     try {
-      const result = await api.getIpInfo({ encoding: 'json' });
+      const result = await api.getIpInfo();
       if (result.success && result.data?.code === 200) {
         // 只保留IP地址信息
         setIpInfo({
@@ -275,6 +315,14 @@ const InfoDashboard = () => {
     }
   };
 
+  // 切换展开状态
+  const toggleSection = (section: 'weibo' | 'zhihu' | 'douyin' | 'toutiao' | 'xiaohongshu' | 'baidu' | 'baiduTv' | 'baiduTieba' | 'maoyanGlobal' | 'maoyanRealtime' | 'maoyanTv' | 'maoyanWeb') => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
 
 
   const fetchLuck = async () => {
@@ -344,7 +392,7 @@ const InfoDashboard = () => {
   const fetchHistory = async () => {
     setLoading(prev => ({ ...prev, history: true }));
     try {
-      const result = await api.getTodayInHistory({ encoding: 'json' });
+      const result = await api.getTodayInHistory();
       if (result.success && result.data?.code === 200) {
         // 修复数据字段映射：API返回的是 {items: [...]}，需要提取items数组
         setHistoryData(result.data.data.items || []);
@@ -582,24 +630,387 @@ const InfoDashboard = () => {
     }
   };
 
-  // 页面加载时自动获取数据
+  // 获取小红书热点
+  const fetchXiaohongshuHot = async () => {
+    setLoading(prev => ({ ...prev, xiaohongshuHot: true }));
+    try {
+      const result = await api.getRednote();
+      if (result.success && result.data?.code === 200) {
+        console.log('🔍 小红书热点API响应数据:', result.data);
+        console.log('🔍 小红书热点数据列表:', result.data.data);
+        if (result.data.data && result.data.data.length > 0) {
+          console.log('🔍 小红书热点单项数据示例:', result.data.data[0]);
+        }
+        setXiaohongshuHotData(result.data.data);
+        toast.success('小红书热点已更新');
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      toast.error('获取小红书热点失败');
+    } finally {
+      setLoading(prev => ({ ...prev, xiaohongshuHot: false }));
+    }
+  };
+
+  // 获取百度实时热搜
+  const fetchBaiduHot = async () => {
+    setLoading(prev => ({ ...prev, baiduHot: true }));
+    try {
+      const result = await api.getBaiduRealtime();
+      if (result.success && result.data?.code === 200) {
+        console.log('🔍 百度实时热搜API响应数据:', result.data);
+        console.log('🔍 百度实时热搜数据列表:', result.data.data);
+        if (result.data.data && result.data.data.length > 0) {
+          console.log('🔍 百度实时热搜单项数据示例:', result.data.data[0]);
+        }
+        setBaiduHotData(result.data.data);
+        toast.success('百度实时热搜已更新');
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      toast.error('获取百度实时热搜失败');
+    } finally {
+      setLoading(prev => ({ ...prev, baiduHot: false }));
+    }
+  };
+
+  // 获取百度电视剧榜
+  const fetchBaiduTv = async () => {
+    setLoading(prev => ({ ...prev, baiduTv: true }));
+    try {
+      const result = await api.getBaiduTeleplay();
+      if (result.success && result.data?.code === 200) {
+        setBaiduTvData(result.data.data);
+        toast.success('百度电视剧榜已更新');
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      toast.error('获取百度电视剧榜失败');
+    } finally {
+      setLoading(prev => ({ ...prev, baiduTv: false }));
+    }
+  };
+
+  // 获取百度贴吧话题榜
+  const fetchBaiduTieba = async () => {
+    setLoading(prev => ({ ...prev, baiduTieba: true }));
+    try {
+      const result = await api.getBaiduTieba();
+      if (result.success && result.data?.code === 200) {
+        setBaiduTiebaData(result.data.data);
+        toast.success('百度贴吧话题榜已更新');
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      toast.error('获取百度贴吧话题榜失败');
+    } finally {
+      setLoading(prev => ({ ...prev, baiduTieba: false }));
+    }
+  };
+
+  // 获取猫眼全球票房总榜
+  const fetchMaoyanGlobal = async () => {
+    setLoading(prev => ({ ...prev, maoyanGlobal: true }));
+    try {
+      const result = await api.getMaoyan({ type: 'global' });
+      if (result.success && result.data?.code === 200) {
+        console.log('🔍 猫眼全球票房总榜API响应数据:', result.data);
+        console.log('🔍 猫眼全球票房总榜数据:', result.data.data);
+        const dataList = result.data.data?.list || result.data.data;
+        console.log('🔍 猫眼全球票房总榜处理后数据:', dataList);
+        if (dataList && dataList.length > 0) {
+          console.log('🔍 猫眼全球票房总榜单项数据示例:', dataList[0]);
+        }
+        setMaoyanGlobalData(dataList);
+        toast.success('猫眼全球票房总榜已更新');
+        
+        // 自动批量获取电影详情
+        if (dataList && dataList.length > 0) {
+          setTimeout(() => {
+            batchFetchMovieDetails(dataList, '全球票房总榜');
+          }, 1000); // 延迟1秒后开始获取详情
+        }
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      toast.error('获取猫眼全球票房总榜失败');
+    } finally {
+      setLoading(prev => ({ ...prev, maoyanGlobal: false }));
+    }
+  };
+
+  // 获取猫眼电影实时票房
+  const fetchMaoyanRealtime = async () => {
+    setLoading(prev => ({ ...prev, maoyanRealtime: true }));
+    try {
+      const result = await api.getMaoyan({ type: 'realtime' });
+      if (result.success && result.data?.code === 200) {
+        const dataList = result.data.data?.list || result.data.data;
+        setMaoyanRealtimeData(dataList);
+        toast.success('猫眼电影实时票房已更新');
+        
+        // 自动批量获取电影详情
+        if (dataList && dataList.length > 0) {
+          setTimeout(() => {
+            batchFetchMovieDetails(dataList, '电影实时票房');
+          }, 1500); // 延迟1.5秒后开始获取详情，避免与全球票房榜冲突
+        }
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      toast.error('获取猫眼电影实时票房失败');
+    } finally {
+      setLoading(prev => ({ ...prev, maoyanRealtime: false }));
+    }
+  };
+
+  // 获取猫眼电视收视排行
+  const fetchMaoyanTv = async () => {
+    setLoading(prev => ({ ...prev, maoyanTv: true }));
+    try {
+      const result = await api.getMaoyanTv();
+      console.log('🔍 猫眼电视收视排行API响应:', result);
+      console.log('🔍 猫眼电视收视排行数据:', result.data);
+      
+      if (result.success && result.data?.code === 200) {
+        const dataList = result.data.data?.list || result.data.data;
+        console.log('🔍 猫眼电视收视排行处理后数据:', dataList);
+        
+        if (dataList && dataList.length > 0) {
+          setMaoyanTvData(dataList);
+          toast.success('猫眼电视收视排行已更新');
+        } else {
+          setMaoyanTvData([]);
+          toast.error('猫眼电视收视排行暂无数据');
+        }
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      console.error('❌ 猫眼电视收视排行API调用失败:', error);
+      toast.error('获取猫眼电视收视排行失败');
+      setMaoyanTvData([]);
+    } finally {
+      setLoading(prev => ({ ...prev, maoyanTv: false }));
+    }
+  };
+
+  // 获取猫眼网剧实时热度
+  const fetchMaoyanWeb = async () => {
+    setLoading(prev => ({ ...prev, maoyanWeb: true }));
+    try {
+      const result = await api.getMaoyanWeb();
+      console.log('🔍 猫眼网剧实时热度API响应:', result);
+      console.log('🔍 猫眼网剧实时热度数据:', result.data);
+      
+      if (result.success && result.data?.code === 200) {
+        const dataList = result.data.data?.list || result.data.data;
+        console.log('🔍 猫眼网剧实时热度处理后数据:', dataList);
+        
+        if (dataList && dataList.length > 0) {
+          setMaoyanWebData(dataList);
+          toast.success('猫眼网剧实时热度已更新');
+        } else {
+          setMaoyanWebData([]);
+          toast.error('猫眼网剧实时热度暂无数据');
+        }
+      } else {
+        throw new Error(result.error || result.data?.message || '获取数据失败');
+      }
+    } catch (error) {
+      console.error('❌ 猫眼网剧实时热度API调用失败:', error);
+      toast.error('获取猫眼网剧实时热度失败');
+      setMaoyanWebData([]);
+    } finally {
+      setLoading(prev => ({ ...prev, maoyanWeb: false }));
+    }
+  };
+
+  // 批量获取电影详情的函数
+  const batchFetchMovieDetails = async (movieList: any[], listName: string) => {
+    if (!movieList || movieList.length === 0) return;
+    
+    try {
+      // 导入电影详情获取函数
+      const { getMovieDetail } = await import('../utils/maoyan-proxy');
+      
+      // 提取电影ID列表
+      const movieIds = movieList
+        .map(item => item.maoyan_id || item.movieId)
+        .filter(id => id && !movieDetails[id]); // 只获取还没有详情的电影
+      
+      if (movieIds.length === 0) return;
+      
+      console.log(`🎬 开始批量获取${listName}的电影详情，共${movieIds.length}部电影`);
+      
+      // 分批处理，避免同时发起过多请求
+      const batchSize = 3; // 每批处理3个
+      const delay = 500; // 每批之间延迟500ms
+      
+      for (let i = 0; i < movieIds.length; i += batchSize) {
+        const batch = movieIds.slice(i, i + batchSize);
+        
+        // 并行处理当前批次
+        const promises = batch.map(async (movieId) => {
+          try {
+            const result = await getMovieDetail(movieId);
+            if (result.success && result.data) {
+              return { movieId, data: result.data };
+            }
+            return null;
+          } catch (error) {
+            console.warn(`获取电影${movieId}详情失败:`, error);
+            return null;
+          }
+        });
+        
+        const results = await Promise.all(promises);
+        
+        // 更新成功获取的电影详情
+        const successResults = results.filter(result => result !== null);
+        if (successResults.length > 0) {
+          setMovieDetails(prev => {
+            const newDetails = { ...prev };
+            successResults.forEach(result => {
+              newDetails[result.movieId] = result.data;
+            });
+            return newDetails;
+          });
+          
+          console.log(`✅ ${listName}批次${Math.floor(i/batchSize) + 1}完成，成功获取${successResults.length}部电影详情`);
+        }
+        
+        // 如果不是最后一批，等待一段时间再处理下一批
+        if (i + batchSize < movieIds.length) {
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
+      
+      console.log(`🎉 ${listName}电影详情批量获取完成`);
+    } catch (error) {
+      console.error(`批量获取${listName}电影详情失败:`, error);
+    }
+  };
+
+  // 处理电影卡片点击 - 获取电影详情并跳转
+  const handleMovieClick = async (movieId: string, movieName?: string) => {
+    try {
+      // 如果已有详情，直接跳转
+      if (movieDetails[movieId]) {
+        const maoyanUrl = `https://maoyan.com/films/${movieId}`;
+        window.open(maoyanUrl, '_blank');
+        toast.success(`已跳转到《${movieName || movieDetails[movieId].nm}》的猫眼页面`);
+        return;
+      }
+      
+      // 导入电影详情获取函数
+      const { getMovieDetail } = await import('../utils/maoyan-proxy');
+      
+      // 获取电影详情
+      const result = await getMovieDetail(movieId);
+      
+      if (result.success && result.data) {
+        // 存储电影详情数据
+        setMovieDetails(prev => ({
+          ...prev,
+          [movieId]: result.data
+        }));
+        
+        // 跳转到猫眼电影详情页
+        const maoyanUrl = `https://maoyan.com/films/${movieId}`;
+        window.open(maoyanUrl, '_blank');
+        
+        console.log('电影详情获取成功:', result.data);
+        toast.success(`已获取《${movieName || result.data.nm}》的详情信息`);
+      } else {
+        // 如果获取详情失败，仍然跳转到猫眼页面
+        console.warn('获取电影详情失败:', result.error);
+        const maoyanUrl = `https://maoyan.com/films/${movieId}`;
+        window.open(maoyanUrl, '_blank');
+        toast.warning(`无法获取《${movieName}》的详情信息，已跳转到猫眼页面`);
+      }
+    } catch (error) {
+      console.error('处理电影点击失败:', error);
+      // 发生错误时，仍然跳转到猫眼页面
+      const maoyanUrl = `https://maoyan.com/films/${movieId}`;
+      window.open(maoyanUrl, '_blank');
+      toast.error(`获取电影详情时发生错误，已跳转到猫眼页面`);
+    }
+  };
+
+  // 页面加载时自动获取数据 - 分批加载以避免并发冲突
   useEffect(() => {
-    fetchNews();
-    fetchBingWallpaper();
-    fetchHitokoto();
-    fetchIP();
-    fetchLanguages();
-    fetchLuck();
-    fetchSickText();
-    fetchSong();
-    fetchHistory();
-    fetchBilibiliHot();
-    fetchEpicGames();
-    fetchRandomJoke();
-    fetchWeiboHot();
-    fetchZhihuHot();
-    fetchDouyinHot();
-    fetchToutiaoHot();
+    const loadDataInBatches = async () => {
+      try {
+        // 第一批：核心数据
+        await Promise.all([
+          fetchNews(),
+          fetchBingWallpaper(),
+          fetchHitokoto(),
+          fetchIP()
+        ]);
+
+        // 延迟加载第二批
+        setTimeout(async () => {
+          await Promise.all([
+            fetchLanguages(),
+            fetchLuck(),
+            fetchSickText(),
+            fetchSong()
+          ]);
+        }, 100);
+
+        // 延迟加载第三批
+        setTimeout(async () => {
+          await Promise.all([
+            fetchHistory(),
+            fetchBilibiliHot(),
+            fetchEpicGames(),
+            fetchRandomJoke()
+          ]);
+        }, 200);
+
+        // 延迟加载第四批
+        setTimeout(async () => {
+          await Promise.all([
+            fetchWeiboHot(),
+            fetchZhihuHot(),
+            fetchDouyinHot(),
+            fetchToutiaoHot()
+          ]);
+        }, 300);
+
+        // 延迟加载第五批：新增榜单
+        setTimeout(async () => {
+          await Promise.all([
+            fetchXiaohongshuHot(),
+            fetchBaiduHot(),
+            fetchBaiduTv(),
+            fetchBaiduTieba()
+          ]);
+        }, 400);
+
+        // 延迟加载第六批：猫眼榜单
+        setTimeout(async () => {
+          await Promise.all([
+            fetchMaoyanGlobal(),
+            fetchMaoyanRealtime(),
+            fetchMaoyanTv(),
+            fetchMaoyanWeb()
+          ]);
+        }, 500);
+      } catch (error) {
+        console.error('批量加载数据时出错:', error);
+      }
+    };
+
+    loadDataInBatches();
   }, []);
 
   return (
@@ -651,7 +1062,7 @@ const InfoDashboard = () => {
                       <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300">今日要闻</h4>
                       <div className="max-h-64 overflow-y-auto space-y-1">
                         {newsData.news.slice(0, 15).map((item: string, index: number) => (
-                          <div key={index} className="text-sm text-gray-600 dark:text-gray-300 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                          <div key={`news-${index}-${item.slice(0, 20)}`} className="text-sm text-gray-600 dark:text-gray-300 p-2 bg-gray-50 dark:bg-gray-800 rounded">
                             <span className="font-medium text-blue-600 dark:text-blue-400">{index + 1}.</span> {item}
                           </div>
                         ))}
@@ -678,9 +1089,15 @@ const InfoDashboard = () => {
                       </div>
                     )}
                   </div>
-                ) : (
+                ) : loading.maoyanTv ? (
                   <div className="flex items-center justify-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-32 text-gray-500 dark:text-gray-400">
+                    <Star className="h-8 w-8 mb-2 opacity-50" />
+                    <p className="text-sm">暂无电视收视排行数据</p>
+                    <p className="text-xs mt-1">API可能暂时不可用，请稍后重试</p>
                   </div>
                 )}
               </CardContent>
@@ -717,9 +1134,15 @@ const InfoDashboard = () => {
                       <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 line-clamp-3">{bingWallpaper.description}</p>
                     </div>
                   </div>
-                ) : (
+                ) : loading.maoyanWeb ? (
                   <div className="flex items-center justify-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-32 text-gray-500 dark:text-gray-400">
+                    <TrendingUp className="h-8 w-8 mb-2 opacity-50" />
+                    <p className="text-sm">暂无网剧实时热度数据</p>
+                    <p className="text-xs mt-1">API可能暂时不可用，请稍后重试</p>
                   </div>
                 )}
               </CardContent>
@@ -746,31 +1169,55 @@ const InfoDashboard = () => {
               </CardHeader>
               <CardContent>
                 {weiboHotData && weiboHotData.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {weiboHotData.map((item: any, index: number) => (
-                      <div key={index} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
-                        <div className="flex items-start justify-between mb-3">
-                          <Badge variant="secondary" className="text-xs">
-                            #{index + 1}
-                          </Badge>
-                          {/* 微博热搜API暂不提供有效热度值，暂时隐藏热度显示 */}
-                          <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
-                            热搜
-                          </Badge>
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.weibo ? weiboHotData : weiboHotData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`weibo-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <Badge variant="secondary" className="text-xs">
+                              #{index + 1}
+                            </Badge>
+                            {/* 微博热搜API暂不提供有效热度值，暂时隐藏热度显示 */}
+                            <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
+                              热搜
+                            </Badge>
+                          </div>
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-medium text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
+                          )}
+                          {item.description && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
+                          )}
                         </div>
-                        {item.link ? (
-                          <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
-                            {item.title}
-                          </a>
-                        ) : (
-                          <h4 className="font-medium text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
-                        )}
-                        {item.description && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{item.description}</p>
-                        )}
+                      ))}
+                    </div>
+                    {weiboHotData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('weibo')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.weibo ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -800,70 +1247,94 @@ const InfoDashboard = () => {
               </CardHeader>
               <CardContent>
                 {zhihuHotData && zhihuHotData.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {zhihuHotData.map((item: any, index: number) => (
-                      <div key={index} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
-                        <div className="flex items-start justify-between mb-3">
-                          <Badge variant="secondary" className="text-xs">
-                            #{index + 1}
-                          </Badge>
-                          {item.hot_value_desc && (
-                            <Badge variant="outline" className="text-xs text-blue-600 dark:text-blue-400">
-                              {item.hot_value_desc}
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {(expandedSections.zhihu ? zhihuHotData : zhihuHotData.slice(0, 6)).map((item: any, index: number) => (
+                        <div key={`zhihu-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <Badge variant="secondary" className="text-xs">
+                              #{index + 1}
                             </Badge>
-                          )}
-                        </div>
-                        
-                        {item.cover && (
-                          <img 
-                            src={item.cover} 
-                            alt={item.title}
-                            className="w-full h-32 object-cover rounded-lg mb-3"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                            }}
-                          />
-                        )}
-                        
-                        {item.link ? (
-                          <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
-                            {item.title}
-                          </a>
-                        ) : (
-                          <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
-                        )}
-                        
-                        {item.detail && (
-                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-3">{item.detail}</p>
-                        )}
-                        
-                        <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          {item.answer_cnt && (
-                            <span className="flex items-center gap-1">
-                              <span>💬</span> {item.answer_cnt} 回答
-                            </span>
-                          )}
-                          {item.follower_cnt && (
-                            <span className="flex items-center gap-1">
-                              <span>👥</span> {item.follower_cnt} 关注
-                            </span>
-                          )}
-                          {item.comment_cnt && (
-                            <span className="flex items-center gap-1">
-                              <span>💭</span> {item.comment_cnt} 评论
-                            </span>
-                          )}
-                        </div>
-                        
-                        {item.created && (
-                          <div className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-                            创建时间：{item.created}
+                            {item.hot_value_desc && (
+                              <Badge variant="outline" className="text-xs text-blue-600 dark:text-blue-400">
+                                {item.hot_value_desc}
+                              </Badge>
+                            )}
                           </div>
-                        )}
+                          
+                          {item.cover && (
+                            <img 
+                              src={item.cover} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
+                          )}
+                          
+                          {item.detail && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-3">{item.detail}</p>
+                          )}
+                          
+                          <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            {item.answer_cnt && (
+                              <span className="flex items-center gap-1">
+                                <span>💬</span> {item.answer_cnt} 回答
+                              </span>
+                            )}
+                            {item.follower_cnt && (
+                              <span className="flex items-center gap-1">
+                                <span>👥</span> {item.follower_cnt} 关注
+                              </span>
+                            )}
+                            {item.comment_cnt && (
+                              <span className="flex items-center gap-1">
+                                <span>💭</span> {item.comment_cnt} 评论
+                              </span>
+                            )}
+                          </div>
+                          
+                          {item.created && (
+                            <div className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                              创建时间：{item.created}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {zhihuHotData.length > 6 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('zhihu')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.zhihu ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -893,55 +1364,79 @@ const InfoDashboard = () => {
               </CardHeader>
               <CardContent>
                 {douyinHotData && douyinHotData.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {douyinHotData.map((item: any, index: number) => (
-                      <div key={index} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
-                        <div className="flex items-start justify-between mb-3">
-                          <Badge variant="secondary" className="text-xs">
-                            #{index + 1}
-                          </Badge>
-                          {item.hot_value && (
-                            <Badge variant="outline" className="text-xs text-purple-600 dark:text-purple-400">
-                              {item.hot_value.toLocaleString()}
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.douyin ? douyinHotData : douyinHotData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`douyin-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <Badge variant="secondary" className="text-xs">
+                              #{index + 1}
                             </Badge>
+                            {item.hot_value && (
+                              <Badge variant="outline" className="text-xs text-purple-600 dark:text-purple-400">
+                                {item.hot_value.toLocaleString()}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {item.cover && (
+                            <img 
+                              src={item.cover} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
                           )}
+                          
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
+                          )}
+                          
+                          <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                            {item.event_time && (
+                              <div className="flex items-center gap-1">
+                                <span>📅</span> 事件时间：{item.event_time}
+                              </div>
+                            )}
+                            {item.active_time && (
+                              <div className="flex items-center gap-1">
+                                <span>🔥</span> 激活时间：{item.active_time}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        
-                        {item.cover && (
-                          <img 
-                            src={item.cover} 
-                            alt={item.title}
-                            className="w-full h-32 object-cover rounded-lg mb-3"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                            }}
-                          />
-                        )}
-                        
-                        {item.link ? (
-                          <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
-                            {item.title}
-                          </a>
-                        ) : (
-                          <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
-                        )}
-                        
-                        <div className="space-y-2 text-xs text-gray-500 dark:text-gray-400">
-                          {item.event_time && (
-                            <div className="flex items-center gap-1">
-                              <span>📅</span> 事件时间：{item.event_time}
-                            </div>
+                      ))}
+                    </div>
+                    {douyinHotData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('douyin')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.douyin ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
                           )}
-                          {item.active_time && (
-                            <div className="flex items-center gap-1">
-                              <span>🔥</span> 激活时间：{item.active_time}
-                            </div>
-                          )}
-                        </div>
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -971,42 +1466,1035 @@ const InfoDashboard = () => {
               </CardHeader>
               <CardContent>
                 {toutiaoHotData && toutiaoHotData.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {toutiaoHotData.map((item: any, index: number) => (
-                      <div key={index} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
-                        <div className="flex items-start justify-between mb-3">
-                          <Badge variant="secondary" className="text-xs">
-                            #{index + 1}
-                          </Badge>
-                          {item.hot_value && (
-                            <Badge variant="outline" className="text-xs text-orange-600 dark:text-orange-400">
-                              {item.hot_value.toLocaleString()}
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.toutiao ? toutiaoHotData : toutiaoHotData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`toutiao-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <Badge variant="secondary" className="text-xs">
+                              #{index + 1}
                             </Badge>
+                            {item.hot_value && (
+                              <Badge variant="outline" className="text-xs text-orange-600 dark:text-orange-400">
+                                {item.hot_value.toLocaleString()}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          {item.cover && (
+                            <img 
+                              src={item.cover} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
                           )}
                         </div>
-                        
-                        {item.cover && (
-                          <img 
-                            src={item.cover} 
-                            alt={item.title}
-                            className="w-full h-32 object-cover rounded-lg mb-3"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
-                            }}
-                          />
-                        )}
-                        
-                        {item.link ? (
-                          <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
-                            {item.title}
-                          </a>
-                        ) : (
-                          <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
-                        )}
+                      ))}
+                    </div>
+                    {toutiaoHotData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('toutiao')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.toutiao ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
                       </div>
-                    ))}
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 小红书热点榜 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Hash className="h-5 w-5 text-red-500" />
+                  <CardTitle>小红书热点</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchXiaohongshuHot}
+                  disabled={loading.xiaohongshuHot}
+                >
+                  {loading.xiaohongshuHot ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {xiaohongshuHotData && xiaohongshuHotData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.xiaohongshu ? xiaohongshuHotData : xiaohongshuHotData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`xiaohongshu-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                #{index + 1}
+                              </Badge>
+                              {item.work_type_icon && (
+                                <img 
+                                  src={item.work_type_icon} 
+                                  alt="类型图标"
+                                  className="w-4 h-4"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              {item.score && (
+                                <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
+                                  热度: {item.score}
+                                </Badge>
+                              )}
+                              {item.hot && (
+                                <Badge variant="outline" className="text-xs text-orange-600 dark:text-orange-400">
+                                  {item.hot}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {item.cover && (
+                            <img 
+                              src={item.cover} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          {item.link ? (
+                            <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
+                          )}
+                          
+                          {item.type && (
+                            <div className="mt-2">
+                              <Badge variant="outline" className="text-xs text-gray-600 dark:text-gray-400">
+                                {item.type}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {xiaohongshuHotData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('xiaohongshu')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.xiaohongshu ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 百度实时热搜榜 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-blue-500" />
+                  <CardTitle>百度实时热搜</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchBaiduHot}
+                  disabled={loading.baiduHot}
+                >
+                  {loading.baiduHot ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {baiduHotData && baiduHotData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.baidu ? baiduHotData : baiduHotData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`baidu-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <Badge variant="secondary" className="text-xs">
+                              #{index + 1}
+                            </Badge>
+                            <div className="flex flex-col items-end gap-1">
+                              {item.score && (
+                                <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
+                                  热度: {item.score}
+                                </Badge>
+                              )}
+                              {item.hot && (
+                                <Badge variant="outline" className="text-xs text-blue-600 dark:text-blue-400">
+                                  {item.hot}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {(item.cover || item.pic) && (
+                            <img 
+                              src={item.cover || item.pic} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          {item.url ? (
+                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
+                          )}
+                          
+                          {item.desc && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                              {item.desc}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {baiduHotData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('baidu')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.baidu ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 百度电视剧榜 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Star className="h-5 w-5 text-purple-500" />
+                  <CardTitle>百度电视剧</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchBaiduTv}
+                  disabled={loading.baiduTv}
+                >
+                  {loading.baiduTv ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {baiduTvData && baiduTvData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.baiduTv ? baiduTvData : baiduTvData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`baidutv-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <Badge variant="secondary" className="text-xs">
+                              #{index + 1}
+                            </Badge>
+                            <div className="flex flex-col items-end gap-1">
+                              {item.score && (
+                                <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
+                                  热度: {item.score}
+                                </Badge>
+                              )}
+                              {item.hot && (
+                                <Badge variant="outline" className="text-xs text-purple-600 dark:text-purple-400">
+                                  {item.hot}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {(item.cover || item.pic) && (
+                            <img 
+                              src={item.cover || item.pic} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          {item.url ? (
+                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
+                          )}
+                          
+                          {item.desc && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                              {item.desc}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {baiduTvData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('baiduTv')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.baiduTv ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 百度贴吧话题榜 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Hash className="h-5 w-5 text-green-500" />
+                  <CardTitle>百度贴吧话题榜</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchBaiduTieba}
+                  disabled={loading.baiduTieba}
+                >
+                  {loading.baiduTieba ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {baiduTiebaData && baiduTiebaData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.baiduTieba ? baiduTiebaData : baiduTiebaData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`baidutieba-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                #{index + 1}
+                              </Badge>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              {item.score && (
+                                <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
+                                  热度: {item.score}
+                                </Badge>
+                              )}
+                              {item.hot && (
+                                <Badge variant="outline" className="text-xs text-green-600 dark:text-green-400">
+                                  {item.hot}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {item.pic && (
+                            <img 
+                              src={item.pic} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          {item.url ? (
+                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline block mb-2 text-sm leading-relaxed">
+                              {item.title}
+                            </a>
+                          ) : (
+                            <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">{item.title}</h4>
+                          )}
+                          
+                          {item.desc && (
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                              {item.desc}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {baiduTiebaData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('baiduTieba')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.baiduTieba ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 猫眼全球票房总榜 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="h-5 w-5 text-yellow-500" />
+                  <CardTitle>猫眼全球票房总榜</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchMaoyanGlobal}
+                  disabled={loading.maoyanGlobal}
+                >
+                  {loading.maoyanGlobal ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {maoyanGlobalData && maoyanGlobalData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.maoyanGlobal ? maoyanGlobalData : maoyanGlobalData.slice(0, 8)).map((item: any, index: number) => {
+                        const movieId = item.maoyan_id || item.movieId;
+                        const movieName = item.movie_name || item.movieName;
+                        
+                        const movieDetail = movieDetails[movieId];
+                        const posterUrl = movieDetail?.img;
+                        
+                        return (
+                          <div 
+                            key={`maoyanglobal-${index}-${movieName?.slice(0, 20) || index}`} 
+                            className="relative border dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg dark:hover:shadow-gray-800/50 transition-all duration-300 cursor-pointer group"
+                            onClick={() => movieId && handleMovieClick(movieId, movieName)}
+                          >
+                            {/* 电影封面背景 */}
+                            {posterUrl ? (
+                              <div 
+                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                style={{ backgroundImage: `url(${posterUrl})` }}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/70 group-hover:via-black/30 group-hover:to-black/10 transition-all duration-300"></div>
+                              </div>
+                            ) : (
+                              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/20 to-orange-600/20 dark:from-yellow-600/30 dark:to-orange-700/30">
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300"></div>
+                              </div>
+                            )}
+                            
+                            {/* 内容层 */}
+                            <div className="relative z-10 p-4 h-48 flex flex-col justify-between text-white">
+                              {/* 顶部信息 */}
+                              <div className="flex items-start justify-between">
+                                <Badge variant="secondary" className="text-xs bg-black/50 text-white border-white/20">
+                                  #{item.rank || index + 1}
+                                </Badge>
+                                <div className="flex flex-col items-end gap-1">
+                                  {movieId && (
+                                    <Badge variant="outline" className="text-xs bg-blue-600/80 text-white border-blue-400/50">
+                                      ID: {movieId}
+                                    </Badge>
+                                  )}
+                                  {(item.box_office || item.boxInfo) && (
+                                    <Badge variant="outline" className="text-xs bg-yellow-600/80 text-white border-yellow-400/50">
+                                      {item.box_office || item.boxInfo}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* 底部信息 */}
+                              <div>
+                                <h4 className="font-bold text-sm mb-2 leading-relaxed text-white drop-shadow-lg">
+                                  {item.movie_name || item.movieName}
+                                </h4>
+                                
+                                <div className="space-y-1 text-xs text-white/90">
+                                  {(item.release_year || item.releaseInfo) && (
+                                    <div className="flex items-center gap-1">
+                                      <span>📅</span> {item.release_year || item.releaseInfo}
+                                    </div>
+                                  )}
+                                  {(item.box_office_desc || item.sumBoxInfo) && (
+                                    <div className="flex items-center gap-1">
+                                      <span>💰</span> {item.box_office_desc || `总票房：${item.sumBoxInfo}`}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {maoyanGlobalData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('maoyanGlobal')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.maoyanGlobal ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 猫眼电影实时票房 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-orange-500" />
+                  <CardTitle>猫眼电影实时票房</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchMaoyanRealtime}
+                  disabled={loading.maoyanRealtime}
+                >
+                  {loading.maoyanRealtime ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {maoyanRealtimeData && maoyanRealtimeData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.maoyanRealtime ? maoyanRealtimeData : maoyanRealtimeData.slice(0, 8)).map((item: any, index: number) => {
+                        const movieId = item.maoyan_id || item.movieId;
+                        const movieName = item.movieName || item.movie_name;
+                        const movieDetail = movieDetails[movieId];
+                        const posterUrl = movieDetail?.img;
+                        
+                        return (
+                          <div 
+                            key={`maoyanrealtime-${index}-${movieName?.slice(0, 20) || index}`} 
+                            className="relative border dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg dark:hover:shadow-gray-800/50 transition-all duration-300 cursor-pointer group"
+                            onClick={() => movieId && handleMovieClick(movieId, movieName)}
+                          >
+                            {/* 电影封面背景 */}
+                            {posterUrl ? (
+                              <div 
+                                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                style={{ backgroundImage: `url(${posterUrl})` }}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 group-hover:from-black/70 group-hover:via-black/30 group-hover:to-black/10 transition-all duration-300"></div>
+                              </div>
+                            ) : (
+                              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-600/20 dark:from-orange-600/30 dark:to-red-700/30">
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300"></div>
+                              </div>
+                            )}
+                            
+                            {/* 内容层 */}
+                            <div className="relative z-10 p-4 h-56 flex flex-col justify-between text-white">
+                              {/* 顶部信息 */}
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="secondary" className="text-xs bg-black/50 text-white border-white/20">
+                                    #{item.rank || index + 1}
+                                  </Badge>
+                                  {item.is_new && (
+                                    <Badge variant="destructive" className="text-xs bg-red-600/80 text-white border-red-400/50">
+                                      新片
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                  {movieId && (
+                                    <Badge variant="outline" className="text-xs bg-blue-600/80 text-white border-blue-400/50">
+                                      ID: {movieId}
+                                    </Badge>
+                                  )}
+                                  {(item.box_office || item.boxInfo) && (
+                                    <Badge variant="outline" className="text-xs bg-orange-600/80 text-white border-orange-400/50">
+                                      {item.box_office || item.boxInfo}
+                                    </Badge>
+                                  )}
+                                  {item.box_office_rate && (
+                                    <Badge variant="outline" className="text-xs bg-green-600/80 text-white border-green-400/50">
+                                      占比: {item.box_office_rate}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* 底部信息 */}
+                              <div>
+                                <h4 className="font-bold text-sm mb-2 leading-relaxed text-white drop-shadow-lg">
+                                  {item.movieName || item.movie_name}
+                                </h4>
+                                
+                                <div className="space-y-1 text-xs text-white/90">
+                                  {(item.releaseInfo || item.release_date) && (
+                                    <div className="flex items-center gap-1">
+                                      <span>📅</span> {item.releaseInfo || item.release_date}
+                                    </div>
+                                  )}
+                                  {(item.sumBoxInfo || item.total_box_office) && (
+                                    <div className="flex items-center gap-1">
+                                      <span>💰</span> 总票房：{item.sumBoxInfo || item.total_box_office}
+                                    </div>
+                                  )}
+                                  {(item.showInfo || item.schedule_rate) && (
+                                    <div className="flex items-center gap-1">
+                                      <span>🎬</span> 排片：{item.showInfo || item.schedule_rate}
+                                    </div>
+                                  )}
+                                  {item.score && (
+                                    <div className="flex items-center gap-1">
+                                      <span>⭐</span> 评分：{item.score}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {maoyanRealtimeData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('maoyanRealtime')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.maoyanRealtime ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 猫眼电视收视排行 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Star className="h-5 w-5 text-indigo-500" />
+                  <CardTitle>猫眼电视收视排行</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchMaoyanTv}
+                  disabled={loading.maoyanTv}
+                >
+                  {loading.maoyanTv ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {maoyanTvData && maoyanTvData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.maoyanTv ? maoyanTvData : maoyanTvData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`maoyantv-${index}-${item.name || item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                #{item.rank || index + 1}
+                              </Badge>
+                              {item.is_new && (
+                                <Badge variant="destructive" className="text-xs">
+                                  新剧
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              {(item.rate || item.rating) && (
+                                <Badge variant="outline" className="text-xs text-indigo-600 dark:text-indigo-400">
+                                  {item.rate ? `${item.rate}%` : item.rating}
+                                </Badge>
+                              )}
+                              {item.heat && (
+                                <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
+                                  热度: {item.heat}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {(item.img || item.poster) && (
+                            <img 
+                              src={item.img || item.poster} 
+                              alt={item.name || item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">
+                            {item.programme_name || item.name || item.title}
+                          </h4>
+                          
+                          <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                            {(item.channel_name || item.channel || item.platform) && (
+                              <div className="flex items-center gap-1">
+                                <span>📺</span> {item.channel_name || item.channel || item.platform}
+                              </div>
+                            )}
+                            {item.market_rate && (
+                              <div className="flex items-center gap-1">
+                                <span>📊</span> 收视率：{item.market_rate}%
+                              </div>
+                            )}
+                            {(item.time || item.air_time) && (
+                              <div className="flex items-center gap-1">
+                                <span>⏰</span> {item.time || item.air_time}
+                              </div>
+                            )}
+                            {item.episode_count && (
+                              <div className="flex items-center gap-1">
+                                <span>📺</span> 集数：{item.episode_count}
+                              </div>
+                            )}
+                            {item.genre && (
+                              <div className="flex items-center gap-1">
+                                <span>🎭</span> 类型：{item.genre}
+                              </div>
+                            )}
+                            {item.score && (
+                              <div className="flex items-center gap-1">
+                                <span>⭐</span> 评分：{item.score}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {maoyanTvData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('maoyanTv')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.maoyanTv ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-32">
+                    <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 猫眼网剧实时热度 - 全宽度 */}
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="h-5 w-5 text-pink-500" />
+                  <CardTitle>猫眼网剧实时热度</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={fetchMaoyanWeb}
+                  disabled={loading.maoyanWeb}
+                >
+                  {loading.maoyanWeb ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  刷新
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {maoyanWebData && maoyanWebData.length > 0 ? (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {(expandedSections.maoyanWeb ? maoyanWebData : maoyanWebData.slice(0, 8)).map((item: any, index: number) => (
+                        <div key={`maoyanweb-${index}-${item.name || item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow bg-white dark:bg-gray-800">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className="text-xs">
+                                #{item.rank || index + 1}
+                              </Badge>
+                              {item.is_new && (
+                                <Badge variant="destructive" className="text-xs">
+                                  新剧
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              {item.heat && (
+                                <Badge variant="outline" className="text-xs text-pink-600 dark:text-pink-400">
+                                  热度: {item.heat}
+                                </Badge>
+                              )}
+                              {item.heat_value && (
+                                <Badge variant="outline" className="text-xs text-red-600 dark:text-red-400">
+                                  {item.heat_value}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {(item.img || item.poster) && (
+                            <img 
+                              src={item.img || item.poster} 
+                              alt={item.name || item.title}
+                              className="w-full h-32 object-cover rounded-lg mb-3"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                              }}
+                            />
+                          )}
+                          
+                          <h4 className="font-semibold text-sm dark:text-gray-200 mb-2 leading-relaxed">
+                            {item.series_name || item.name || item.title}
+                          </h4>
+                          
+                          <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                            {item.curr_heat && (
+                              <div className="flex items-center gap-1">
+                                <span>🔥</span> 热度：{item.curr_heat}
+                              </div>
+                            )}
+                            {(item.channel || item.platform) && (
+                              <div className="flex items-center gap-1">
+                                <span>📱</span> {item.channel || item.platform}
+                              </div>
+                            )}
+                            {(item.time || item.update_time) && (
+                              <div className="flex items-center gap-1">
+                                <span>⏰</span> {item.time || item.update_time}
+                              </div>
+                            )}
+                            {item.episode_count && (
+                              <div className="flex items-center gap-1">
+                                <span>📺</span> 集数：{item.episode_count}
+                              </div>
+                            )}
+                            {item.genre && (
+                              <div className="flex items-center gap-1">
+                                <span>🎭</span> 类型：{item.genre}
+                              </div>
+                            )}
+                            {item.score && (
+                              <div className="flex items-center gap-1">
+                                <span>⭐</span> 评分：{item.score}
+                              </div>
+                            )}
+                            {item.play_count && (
+                              <div className="flex items-center gap-1">
+                                <span>▶️</span> 播放量：{item.play_count}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {maoyanWebData.length > 8 && (
+                      <div className="flex justify-center mt-4">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSection('maoyanWeb')}
+                          className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                          {expandedSections.maoyanWeb ? (
+                            <>
+                              <ChevronUp className="h-4 w-4 mr-1" />
+                              收起
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4 mr-1" />
+                              展开更多
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -1085,7 +2573,7 @@ const InfoDashboard = () => {
                 {bilibiliHotData && bilibiliHotData.length > 0 ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {bilibiliHotData.map((item: any, index: number) => (
-                      <div key={index} className="border dark:border-gray-700 rounded-lg p-3 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow">
+                      <div key={`bilibili-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-3 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow">
                         <div className="flex items-start justify-between">
                           <Badge variant="secondary" className="text-xs mb-2">
                             #{index + 1}
@@ -1135,7 +2623,7 @@ const InfoDashboard = () => {
                 {epicGamesData && epicGamesData.length > 0 ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {epicGamesData.map((item: any, index: number) => (
-                      <div key={index} className="border dark:border-gray-700 rounded-lg p-3 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow">
+                      <div key={`epic-${index}-${item.title?.slice(0, 20) || index}`} className="border dark:border-gray-700 rounded-lg p-3 hover:shadow-md dark:hover:shadow-gray-800/50 transition-shadow">
                         {item.image && (
                           <img 
                             src={item.image} 
