@@ -73,7 +73,7 @@ fi
 echo "Final configuration content:"
 cat "$CONFIG_FILE" 2>/dev/null || echo "Could not read final config file"
 
-echo "Starting nginx..."
+echo "Starting services with supervisor..."
 
 # 测试nginx配置
 nginx -t || {
@@ -81,5 +81,5 @@ nginx -t || {
     exit 1
 }
 
-# 启动nginx
-exec nginx -g "daemon off;"
+# 启动supervisor来管理nginx和代理服务器
+exec supervisord -c /etc/supervisor/conf.d/supervisord.conf

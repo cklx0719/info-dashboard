@@ -33,7 +33,7 @@ export async function fetchMovieDetailProxy(movieId: string | number): Promise<M
     // 使用Express代理服务器
     // 在生产环境中，这个URL应该指向部署的代理服务器
     const proxyBaseUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://your-proxy-server.vercel.app' // 替换为实际的代理服务器地址
+      ? 'http://localhost:3001' // Docker容器内的代理服务器地址
       : 'http://localhost:3001';
     
     const apiUrl = `${proxyBaseUrl}/api/movie/${movieId}`;

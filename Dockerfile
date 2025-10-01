@@ -16,11 +16,11 @@ COPY . .
 # 构建应用
 RUN npm run build
 
-# 生产阶段 - 使用nginx提供静态文件服务
+# 生产阶段 - 使用nginx提供静态文件服务，同时运行Node.js代理服务器
 FROM nginx:alpine
 
-# 安装必要的工具
-RUN apk add --no-cache tzdata
+# 安装必要的工具和Node.js
+RUN apk add --no-cache tzdata nodejs npm supervisor
 
 # 设置时区
 ENV TZ=Asia/Shanghai
@@ -76,16 +76,51 @@ RUN mkdir -p /app/config && \
 # 复制配置文件到可挂载目录（用于docker-compose挂载）
 COPY --from=builder /app/public/config.json /app/config/config.json
 
+# 复制代理服务器文件
+COPY --from=builder /app/proxy-server.js /app/proxy-server.js
+COPY --from=builder /app/proxy-package.json /app/package.json
+COPY --from=builder /app/api /app/api
+
+# 安装代理服务器依赖
+WORKDIR /app
+RUN npm install --production
+
+# 创建supervisor配置目录和日志目录
+RUN mkdir -p /etc/supervisor/conf.d /var/log/supervisor
+COPY <<EOF /etc/supervisor/conf.d/supervisord.conf
+[supervisord]
+nodaemon=true
+user=root
+logfile=/var/log/supervisor/supervisord.log
+pidfile=/var/run/supervisord.pid
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/nginx/error.log
+stdout_logfile=/var/log/nginx/access.log
+
+[program:proxy-server]
+command=node /app/proxy-server.js
+directory=/app
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/proxy-server.log
+stdout_logfile=/var/log/proxy-server.log
+environment=NODE_ENV=production,PORT=3001
+EOF
+
 # 复制启动脚本
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# 暴露端口
-EXPOSE 80
+# 暴露端口 (80 for nginx, 3001 for proxy server)
+EXPOSE 80 3001
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
 
-# 使用启动脚本
+# 使用supervisor启动多个服务
 ENTRYPOINT ["/docker-entrypoint.sh"]
