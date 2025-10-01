@@ -12,7 +12,7 @@
 
 - **GitHub 仓库**: [https://github.com/cklx0719/info-dashboard](https://github.com/cklx0719/info-dashboard)
 - **Docker Hub**: [https://hub.docker.com/r/cklx0719/info-dashboard](https://hub.docker.com/r/cklx0719/info-dashboard)
-- **最新发布**: [v0.4.0](https://github.com/cklx0719/info-dashboard/releases/tag/v0.4.0)
+- **最新发布**: [v0.4.2](https://github.com/cklx0719/info-dashboard/releases/tag/v0.4.2)
 
 ## 功能特性
 
@@ -157,12 +157,12 @@ docker run -d \
 #### Docker 配置说明
 
 - **端口映射**: 
-  - 前端服务: 容器内部使用80端口，可映射到主机任意端口
-  - 代理服务: 容器内部使用3001端口，用于电影详情API代理
+  - 容器统一使用80端口对外提供服务，可映射到主机任意端口
+  - 内置nginx反向代理，自动处理前端静态文件和电影详情API代理
 - **配置文件映射**: 可挂载 `config.json` 配置文件自定义API地址
 - **日志目录**: 可挂载 `/var/log/nginx` 查看访问日志
 - **多架构支持**: 支持 `amd64` 和 `arm64` 架构
-- **内置服务**: 包含前端静态文件和电影详情代理服务器
+- **内置服务**: 包含nginx、前端静态文件和电影详情代理服务器，使用supervisor管理
 
 ### 📦 静态文件部署
 

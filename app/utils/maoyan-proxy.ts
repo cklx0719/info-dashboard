@@ -31,9 +31,9 @@ interface MaoyanDetailResponse {
 export async function fetchMovieDetailProxy(movieId: string | number): Promise<MaoyanDetailResponse> {
   try {
     // 使用Express代理服务器
-    // 在生产环境中，这个URL应该指向部署的代理服务器
+    // 在生产环境中，通过nginx反代统一处理
     const proxyBaseUrl = process.env.NODE_ENV === 'production' 
-      ? 'http://localhost:3001' // Docker容器内的代理服务器地址
+      ? '' // 使用相对路径，通过nginx反代
       : 'http://localhost:3001';
     
     const apiUrl = `${proxyBaseUrl}/api/movie/${movieId}`;

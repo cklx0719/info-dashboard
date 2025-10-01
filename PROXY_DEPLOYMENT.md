@@ -4,6 +4,67 @@
 
 这个代理服务器用于解决猫眼电影详情API的CORS问题，使前端能够正常获取电影详情数据。
 
+## 🐳 Docker部署（推荐）
+
+**v0.4.2版本开始，Docker镜像已内置nginx反向代理，无需单独部署代理服务器！**
+
+### 特性
+- ✅ 内置nginx反向代理，自动处理CORS问题
+- ✅ 使用supervisor管理nginx和Node.js代理服务器
+- ✅ 统一80端口对外提供服务
+- ✅ 自动路由 `/api/movie/` 到内部代理服务器
+
+### 部署方式
+
+#### 使用Docker Compose
+```bash
+docker-compose up -d
+```
+
+#### 使用Docker命令
+```bash
+docker run -d \
+  --name info-dashboard \
+  -p 3000:80 \
+  --restart unless-stopped \
+  cklx0719/info-dashboard:latest
+```
+
+### 宝塔面板反向代理配置
+
+如果你使用宝塔面板，可以这样配置nginx反向代理：
+
+```nginx
+# 主应用反向代理
+location / {
+    proxy_pass http://127.0.0.1:3090;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+# 电影API反向代理（可选，如果需要单独处理）
+location /api/movie/ {
+    proxy_pass http://127.0.0.1:3090/api/movie/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    
+    # CORS 处理
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+    add_header Access-Control-Allow-Headers 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+    
+    if ($request_method = 'OPTIONS') {
+        return 204;
+    }
+}
+```
+
+> **注意**: 如果你的Docker容器映射到3090端口，上述配置中的端口号需要相应调整。
+
 ## 本地开发
 
 ### 安装依赖
@@ -110,4 +171,10 @@ const proxyBaseUrl = process.env.NODE_ENV === 'production'
 
 ## 更新日志
 
+- v0.4.2: 🎉 **重大更新** - Docker镜像内置nginx反向代理，无需单独部署代理服务器
+  - 新增supervisor管理多个服务
+  - 新增nginx反向代理配置
+  - 统一80端口对外提供服务
+  - 自动处理CORS问题
+  - 简化部署流程
 - v1.0.0: 初始版本，支持猫眼电影详情API代理

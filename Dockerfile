@@ -28,24 +28,30 @@ ENV TZ=Asia/Shanghai
 # 创建nginx配置目录
 RUN mkdir -p /etc/nginx/conf.d
 
-# 复制自定义nginx配置
+# 创建nginx配置
 COPY <<EOF /etc/nginx/conf.d/default.conf
 server {
     listen 80;
     server_name localhost;
     root /usr/share/nginx/html;
-    index index.html;
+    index index.html index.htm;
     
-    # 启用gzip压缩
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
-    
-    # 静态资源缓存
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
+    # 代理服务器API
+    location /api/movie/ {
+        proxy_pass http://localhost:3001/api/movie/;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        
+        # CORS headers
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+        add_header Access-Control-Allow-Headers "DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization";
+        
+        if (\$request_method = OPTIONS) {
+            return 204;
+        }
     }
     
     # SPA路由支持
@@ -115,8 +121,8 @@ EOF
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# 暴露端口 (80 for nginx, 3001 for proxy server)
-EXPOSE 80 3001
+# 暴露端口（只暴露80，3001通过nginx内部反代）
+EXPOSE 80
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
