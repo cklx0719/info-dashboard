@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   info-dashboard:
-    image: cklx0719/info-dashboard:v0.4.2
+    image: cklx0719/info-dashboard:v0.4.3
     container_name: info-dashboard
     restart: unless-stopped
     ports:

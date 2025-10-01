@@ -12,7 +12,7 @@
 
 - **GitHub 仓库**: [https://github.com/cklx0719/info-dashboard](https://github.com/cklx0719/info-dashboard)
 - **Docker Hub**: [https://hub.docker.com/r/cklx0719/info-dashboard](https://hub.docker.com/r/cklx0719/info-dashboard)
-- **最新发布**: [v0.4.2](https://github.com/cklx0719/info-dashboard/releases/tag/v0.4.2)
+- **最新发布**: [v0.4.3](https://github.com/cklx0719/info-dashboard/releases/tag/v0.4.3)
 
 ## 功能特性
 
@@ -143,7 +143,7 @@ npm run build
 
 ```bash
 # 拉取镜像
-docker pull cklx0719/info-dashboard:v0.4.2
+docker pull cklx0719/info-dashboard:v0.4.3
 
 # 运行容器
 docker run -d \
@@ -151,7 +151,7 @@ docker run -d \
   -p 3000:80 \
   -v ./config.json:/usr/share/nginx/html/config.json:ro \
   --restart unless-stopped \
-  cklx0719/info-dashboard:v0.4.2
+  cklx0719/info-dashboard:v0.4.3
 ```
 
 #### Docker 配置说明
