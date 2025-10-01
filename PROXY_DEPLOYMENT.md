@@ -27,7 +27,7 @@ docker run -d \
   --name info-dashboard \
   -p 3000:80 \
   --restart unless-stopped \
-  cklx0719/info-dashboard:latest
+  cklx0719/info-dashboard:v0.4.2
 ```
 
 ### 宝塔面板反向代理配置

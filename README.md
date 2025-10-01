@@ -143,7 +143,7 @@ npm run build
 
 ```bash
 # 拉取镜像
-docker pull cklx0719/info-dashboard:latest
+docker pull cklx0719/info-dashboard:v0.4.2
 
 # 运行容器
 docker run -d \
@@ -151,7 +151,7 @@ docker run -d \
   -p 3000:80 \
   -v ./config.json:/usr/share/nginx/html/config.json:ro \
   --restart unless-stopped \
-  cklx0719/info-dashboard:latest
+  cklx0719/info-dashboard:v0.4.2
 ```
 
 #### Docker 配置说明

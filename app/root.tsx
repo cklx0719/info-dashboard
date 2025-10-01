@@ -8,6 +8,9 @@ import {
 } from "react-router";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { useEffect } from "react";
+import { initBrowserCompatibility } from "./utils/browser-compatibility";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -31,6 +34,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="edge-compatibility" content="IE=edge" />
+        <meta name="renderer" content="webkit" />
         <Meta />
         <Links />
       </head>
@@ -45,20 +50,38 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <ScrollRestoration />
         <Scripts />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Edge浏览器兼容性预处理
+              if (navigator.userAgent.includes('Edg/')) {
+                console.log('Edge浏览器检测，启用兼容性模式');
+                window.__EDGE_COMPAT__ = true;
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
 }
 
 export default function App() {
+  useEffect(() => {
+    // 初始化浏览器兼容性处理
+    initBrowserCompatibility();
+  }, []);
+
   return (
-    <ThemeProvider>
-      <Outlet />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <Outlet />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+export function RouteErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
@@ -86,3 +109,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </main>
   );
 }
+
+// 导出为ErrorBoundary以保持React Router的约定
+export { RouteErrorBoundary as ErrorBoundary };
